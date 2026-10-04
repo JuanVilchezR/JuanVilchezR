@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 import AxeBuilder from '@axe-core/playwright';
 import type { Page } from '@playwright/test';
 import { test, expect, estable, cargarPerezosas, vigilarErrores } from './support/fixtures';
-import { montarSitio } from './support/site.mjs';
+import { montarSitio, MODO_REAL } from './support/site.mjs';
 
 /**
  * Regresión en páginas internas: mejoras.css se comparte en todo el sitio, así que cada plantilla
@@ -45,9 +45,14 @@ for (const ruta of Object.keys(manifiesto)) {
 
 test('las reglas de la portada no se filtran a las páginas internas', async ({ page }) => {
   await page.goto('/contacto/');
+  await expect(page.locator('body')).not.toHaveClass(/\bhome\b/);
+  if (MODO_REAL) {
+    // la barra superior es igual en todas las páginas: ya no existe el bloque derecho que solo se ocultaba en la portada
+    await expect(page.locator('.topbar .tb-right')).toHaveCount(0);
+    return;
+  }
   expect(await page.locator('.phero .eyebrow').first().evaluate((e) => getComputedStyle(e).display)).not.toBe('none');
   expect(await page.locator('.topbar .tb-right').evaluate((e) => getComputedStyle(e).display)).not.toBe('none');
-  await expect(page.locator('body')).not.toHaveClass(/\bhome\b/);
 });
 
 test('catálogo: los filtros siguen ocultando y mostrando modelos', async ({ page }) => {

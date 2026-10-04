@@ -2,6 +2,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { test, expect } from '@playwright/test';
+import { MODO_REAL } from './support/site.mjs';
+
+test.skip(MODO_REAL, 'solo aplica a la copia de prueba; en modo real los cambios van en el repositorio del sitio');
 
 /**
  * Garantiza que la entrega no toca nada fuera de lo acordado:

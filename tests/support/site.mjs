@@ -54,6 +54,51 @@ const IMAGENES = {
 
 const MARCADOR = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480"><rect width="640" height="480" fill="#d9d9d9"/><path d="M0 0l640 480M640 0L0 480" stroke="#c4c4c4" stroke-width="2"/></svg>`;
 
+// Modo real: con WEB_DIST (carpeta dist/ compilada del proyecto Astro) el sitio se sirve desde ahí, con sus fotos y
+// tipografías reales. WEB_DIST_ANTES (opcional) es la compilación de la rama principal, para comparar antes y después.
+const REAL = process.env.WEB_DIST ? path.resolve(process.env.WEB_DIST) : '';
+const REAL_ANTES = process.env.WEB_DIST_ANTES ? path.resolve(process.env.WEB_DIST_ANTES) : REAL;
+export const MODO_REAL = !!REAL;
+
+const MIME_REAL = {
+  ...MIME,
+  '.webp': 'image/webp', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.ico': 'image/x-icon', '.pdf': 'application/pdf',
+  '.xml': 'application/xml; charset=utf-8', '.txt': 'text/plain; charset=utf-8', '.json': 'application/json',
+};
+
+/** Rutas (con barra final) de todas las páginas compiladas en WEB_DIST, menos la 404. */
+export function rutasReales() {
+  const rutas = [];
+  const recorrer = (dir) => {
+    for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+      const f = path.join(dir, e.name);
+      if (e.isDirectory()) recorrer(f);
+      else if (e.name === 'index.html') rutas.push('/' + path.relative(REAL, dir).split(path.sep).filter(Boolean).join('/') + (dir === REAL ? '' : '/'));
+    }
+  };
+  recorrer(REAL);
+  return rutas.sort();
+}
+
+/** Sirve un archivo de dist/ como lo haría Cloudflare Workers (html_handling auto-trailing-slash, 404-page). */
+function servirDist(route, url, variante) {
+  const raiz = variante === 'antes' ? REAL_ANTES : REAL;
+  const ruta = decodeURIComponent(url.pathname);
+  const ok = (cuerpo, tipo, estado = 200) => route.fulfill({ status: estado, contentType: tipo, body: cuerpo });
+  if (ruta === '/libro-de-reclamaciones/enviar') {
+    return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ok: false, error: 'servicio' }) });
+  }
+  const candidatos = ruta.endsWith('/') ? [path.join(raiz, ruta, 'index.html')] : [path.join(raiz, ruta)];
+  for (const f of candidatos) {
+    if (f.startsWith(raiz) && fs.existsSync(f) && fs.statSync(f).isFile()) return ok(fs.readFileSync(f), MIME_REAL[path.extname(f)] ?? 'application/octet-stream');
+  }
+  if (!ruta.endsWith('/') && fs.existsSync(path.join(raiz, ruta, 'index.html'))) {
+    return route.fulfill({ status: 301, headers: { location: ruta + '/' }, body: '' });
+  }
+  const p404 = path.join(raiz, '404.html');
+  return fs.existsSync(p404) ? ok(fs.readFileSync(p404), MIME_REAL['.html'], 404) : ok('no existe', 'text/plain', 404);
+}
+
 const leer = (p) => fs.readFileSync(p);
 const manifiesto = JSON.parse(leer(path.join(BASE, 'pages/manifest.json'), 'utf8').toString());
 
@@ -71,6 +116,7 @@ function conMejoras(html) {
 }
 
 async function servirOrigen(route, url, variante) {
+  if (REAL) return servirDist(route, url, variante);
   const ruta = decodeURIComponent(url.pathname);
   const ok = (cuerpo, tipo) => route.fulfill({ status: 200, contentType: tipo, body: cuerpo });
   const vacio = () => route.fulfill({ status: 204, body: '' });

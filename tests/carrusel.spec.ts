@@ -1,5 +1,6 @@
 import type { Page } from '@playwright/test';
 import { test, expect, estable, vigilarErrores } from './support/fixtures';
+import { MODO_REAL } from './support/site.mjs';
 
 /**
  * Botón de pausa del carrusel (mejoras.js). WCAG 2.2.2 (nivel A): el avance automático cada 5 s debe poder detenerse.
@@ -295,6 +296,7 @@ test.describe('carrusel: botón de pausa', () => {
     });
 
     test('un focusout o mouseleave sintético sobre window con la pausa activa no produce errores', async ({ page }) => {
+      test.skip(MODO_REAL, 'el interceptor era propio del complemento mejoras.js; el botón ahora es nativo');
       const errores = vigilarErrores(page);
       await abrirConRelojDetenido(page);
       await page.locator('.slider-pausa').click();
@@ -307,7 +309,7 @@ test.describe('carrusel: botón de pausa', () => {
     });
   });
 
-  test('en páginas sin carrusel mejoras.js no hace nada ni da errores', async ({ page }) => {
+  test('en páginas sin carrusel no hay botón de pausa ni errores', async ({ page }) => {
     const errores = vigilarErrores(page);
     await page.goto('/contacto/');
     await estable(page);
@@ -315,13 +317,6 @@ test.describe('carrusel: botón de pausa', () => {
     expect(errores).toEqual([]);
   });
 
-  test('si falta mejoras.css el botón no se muestra: no queda un control sin estilo empujando el carrusel', async ({ page }) => {
-    await page.route(/\/assets\/mejoras\.css/, (r) => r.fulfill({ status: 404, body: '' })); // la ruta de la página manda sobre la del contexto; con regex porque la portada lleva ?v=
-    await page.goto('/');
-    await expect(page.locator('.slider .dots button')).toHaveCount(4);
-    await expect(page.locator('.slider-pausa')).toHaveCount(0);
-    await expect(page.locator('#slider')).not.toHaveClass(/con-pausa/);
-  });
 
   test('con colores forzados de Windows los puntos se ven y el activo se distingue', async ({ page }) => {
     await page.emulateMedia({ forcedColors: 'active', reducedMotion: 'reduce' });
@@ -346,7 +341,7 @@ test.describe('carrusel: botón de pausa', () => {
     await page.goto('/');
     expect(await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches)).toBe(true);
     await expect(page.locator('.slider .dots button')).toHaveCount(4);
-    await expect(page.locator('.slider-pausa')).toHaveCount(0);
+    await expect(page.locator('.slider-pausa')).toBeHidden(); // nativo: el botón está en el HTML pero oculto; el complemento ni lo agregaba
   });
 
   test.describe('versión publicada', () => {
