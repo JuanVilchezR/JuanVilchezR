@@ -10,8 +10,8 @@ fotos de prueba); no se midió con Lighthouse ni con lector de pantalla real; la
 
 | # | Dimensión | Publicada | Con mejoras | Hallazgo principal |
 | --- | --- | :-: | :-: | --- |
-| 1 | Accesibilidad | 2 | 3 | Contraste del texto blanco sobre el verde de WhatsApp: 3,09:1 (axe: 1 fallo *serious*). Ahora 5,02:1 y 0 violaciones. Falta pausa del carrusel |
-| 2 | Rendimiento | 3 | 3 | Héroe sin imagen (el LCP es texto), fuentes con *preload*, imágenes con ancho y alto. La capa suma 6,0 KB (gzip) |
+| 1 | Accesibilidad | 2 | 3 | Contraste del texto blanco sobre el verde de WhatsApp: 3,09:1 (axe: 1 fallo *serious*). Ahora 5,02:1 y 0 violaciones. Pausa del carrusel resuelta con `mejoras.js` (opcional); falta probar con lector de pantalla real |
+| 2 | Rendimiento | 3 | 3 | Héroe sin imagen (el LCP es texto), fuentes con *preload*, imágenes con ancho y alto. La capa suma 6,3 KB de CSS y 1,3 KB de JS opcional (gzip) |
 | 3 | Tema / tokens | 3 | 3 | Tokens en `:root`, pero redefinidos en 3 capas sucesivas del CSS |
 | 4 | Responsive | 3 | 4 | A 320 px la cabecera y la barra inferior medían 370 px (50 px de desborde). Corregido |
 | 5 | Integridad de la implementación | 3 | 3 | Sistema coherente de "plano de ingeniería"; plantilla repetida en cada sección (9 sobretítulos, cifras en grande, 5 llamados a WhatsApp) |
@@ -51,7 +51,7 @@ Cada hallazgo: observación · norma y numeral · riesgo · recomendación · pr
 
 **6. Carrusel con avance automático sin botón de pausa**
 - *Observación:* avanza cada 5 s; se detiene con el mouse, con el foco y con movimiento reducido, pero no hay botón de pausa.
-- *Norma:* WCAG 2.2 · 2.2.2 Pausar, detener, ocultar (nivel A). · *Riesgo:* en pantallas táctiles no hay forma de detenerlo. · *Recomendación:* botón "Pausar" (requiere HTML y JS). — **Pendiente** (fuera de una capa CSS).
+- *Norma:* WCAG 2.2 · 2.2.2 Pausar, detener, ocultar (nivel A). · *Riesgo:* en pantallas táctiles no hay forma de detenerlo. · *Recomendación:* botón de pausa y reanudar al inicio de la fila de puntos. — **Resuelto** con `mejoras.js` (opcional, 2,6 KB, sin tocar `site.js`): pausado no se reanuda al sacar el puntero ni el foco; con movimiento reducido no aparece (allí el carrusel no avanza solo). Probado con el reloj de Playwright (ratón, teclado, sin foco, flechas con pausa activa, 320 a 520 px) y rompiendo a propósito cada mecanismo para confirmar que las pruebas fallan. *Pendiente:* probarlo con un lector de pantalla real; la solución definitiva es llevar el botón al HTML del carrusel y a `site.js`.
 
 **7. Jerarquía de la primera pantalla**
 - *Observación:* 5 llamados a WhatsApp visibles (barra superior, cabecera, héroe, formulario, botón flotante); formulario de 690 px que empujaba los accesos y las cifras fuera de la pantalla; texto del héroe pegado arriba con un hueco debajo; en una laptop de 1366×768 (≈650 px útiles con la barra del navegador) el botón de enviar quedaba cortado y el de WhatsApp del héroe, bajo el pliegue.
@@ -93,12 +93,12 @@ imagen (LCP de texto), imágenes con ancho y alto, mensaje de WhatsApp armado co
 | Contraste texto del botón de WhatsApp | 3,09 → **5,02** | 3,09 → **5,02** | 3,09 → **5,02** |
 | Contraste del borde de los campos | 1,88 → **3,36** | 1,88 → **3,36** | 1,88 → **3,36** |
 | Desborde horizontal | 0 → 0 | 0 → 0 | 50 px → **0** |
-| Objetivos táctiles < 44 px (medidos) | 14 → **0** | 9 → **0** | 9 → **4** (los 4 puntos del carrusel miden 36×44 para no pisar las flechas) |
+| Objetivos táctiles < 44 px (medidos) | 14 → **0** | 9 → **0** | 9 → **4** (los 4 puntos del carrusel miden 27×44: se encogen para caber junto al botón de pausa y las flechas) |
 | Sobretítulos visibles | 9 → **0** | 9 → **0** | 9 → **0** |
 | Alto del formulario | 690 → **656** px | 900 → **853** px | 915 → **867** px |
 | Alto del héroe | 970 → **949** px | 2006 → **1767** px | 2168 → **1877** px |
 | Alto de la página | 8754 → 9191 px | 16 569 → 16 760 px | 17 723 → 17 854 px |
 | Violaciones axe-core (WCAG 2.2 AA) | 1 → **0** | 1 → **0** | 2 → **0** |
-| Peso añadido (CSS) | 19,7 KB · 6,0 KB gzip · 5,3 KB brotli | | |
+| Peso añadido | CSS 20,9 KB · 6,3 KB gzip · 5,6 KB brotli; JS opcional 2,6 KB · 1,3 KB gzip · 1,0 KB brotli | | |
 
 La página crece 437 px en escritorio (más aire entre secciones) y 191 px en celular (1 %, por los sub-enlaces de 44 px); el héroe se acorta 21 px en escritorio y 239 px en celular.

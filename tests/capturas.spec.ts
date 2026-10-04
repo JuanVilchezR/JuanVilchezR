@@ -7,7 +7,8 @@ import { test, estable, cargarPerezosas } from './support/fixtures';
  * Usa movimiento reducido para fotografiar siempre el estado final, sin animaciones a medias.
  */
 test.skip(!process.env.CAPTURAS, 'solo con CAPTURAS=1');
-test.use({ reducedMotion: 'reduce' });
+// test.use({ reducedMotion }) no se aplica en esta versión de Playwright: se emula en cada página
+test.beforeEach(async ({ page }) => { await page.emulateMedia({ reducedMotion: 'reduce' }); });
 
 for (const sitio of ['antes', 'despues'] as const) {
   test.describe(sitio, () => {

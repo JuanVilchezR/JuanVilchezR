@@ -3,9 +3,9 @@
 // El navegador cree que está en el dominio de producción, pero cada petición se responde
 // aquí, sin red:
 //   · HTML, site.css y site.js  → tests/fixtures/baseline (copia fiel de lo publicado el 04/10/2026)
-//   · home "después"            → site/index.html + site/assets/mejoras.css (lo que se entrega)
-//   · páginas internas          → su copia de baseline; en "después" solo cambia que reciben mejoras.css,
-//                                 igual que ocurrirá al desplegar (el CSS se comparte en todo el sitio)
+//   · home "después"            → site/index.html + site/assets/mejoras.css y mejoras.js (lo que se entrega)
+//   · páginas internas          → su copia de baseline; en "después" solo cambia que reciben mejoras.css y mejoras.js,
+//                                 igual que ocurrirá al desplegar (CSS y JS se comparten en todo el sitio)
 //   · tipografías               → paquetes @fontsource (mismas familias que usa la web)
 //   · fotos                     → recortes de la propia web (solo para pruebas) o un marcador gris
 //   · cualquier otro dominio    → bloqueado (analítica, etc.); wa.me responde una página vacía
@@ -57,12 +57,17 @@ const MARCADOR = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480">
 const leer = (p) => fs.readFileSync(p);
 const manifiesto = JSON.parse(leer(path.join(BASE, 'pages/manifest.json'), 'utf8').toString());
 
-/** Inserta mejoras.css justo después de site.css: es lo que ocurre al desplegar la capa de mejoras. */
+/** Inserta mejoras.css tras site.css y mejoras.js tras site.js: es lo que ocurre al desplegar la capa de mejoras. */
 function conMejoras(html) {
-  return html.replace(
-    /(<link rel="stylesheet" href="[^"]*assets\/site\.css[^"]*">)/,
-    `$1<link rel="stylesheet" href="${ORIGEN}/assets/mejoras.css">`,
-  );
+  return html
+    .replace(
+      /(<link rel="stylesheet" href="[^"]*assets\/site\.css[^"]*">)/,
+      `$1<link rel="stylesheet" href="${ORIGEN}/assets/mejoras.css">`,
+    )
+    .replace(
+      /(<script src="[^"]*assets\/site\.js[^"]*" defer><\/script>)/,
+      `$1<script src="${ORIGEN}/assets/mejoras.js" defer></script>`,
+    );
 }
 
 async function servirOrigen(route, url, variante) {
@@ -76,10 +81,10 @@ async function servirOrigen(route, url, variante) {
   }
   if (ruta === '/assets/site.css') return ok(leer(path.join(BASE, 'site.css')), MIME['.css']);
   if (ruta === '/assets/site.js') return ok(leer(path.join(BASE, 'site.js')), MIME['.js']);
-  if (ruta === '/assets/mejoras.css') {
-    const f = path.join(SITIO, 'assets/mejoras.css');
+  if (ruta === '/assets/mejoras.css' || ruta === '/assets/mejoras.js') {
+    const f = path.join(SITIO, ruta);
     return variante === 'despues' && fs.existsSync(f)
-      ? ok(leer(f), MIME['.css'])
+      ? ok(leer(f), MIME[path.extname(f)])
       : route.fulfill({ status: 404, body: 'no existe' });
   }
   if (ruta.startsWith('/assets/fonts/')) {

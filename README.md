@@ -11,7 +11,8 @@ Capa de mejoras de diseño para **www.vyrseguritec.com.pe**, con su batería de 
 | Archivo | Qué es |
 | --- | --- |
 | `site/assets/mejoras.css` | **La mejora.** Se carga después de `site.css`. Reglas sin prefijo = todo el sitio; reglas `body.home` = solo la portada. |
-| `site/index.html` | La portada publicada con **dos únicos cambios**: `class="has-bar home"` en el `<body>` y el `<link>` a `mejoras.css`. |
+| `site/assets/mejoras.js` | **Opcional (2,6 KB).** Botón de pausa del carrusel (WCAG 2.2.2). Se carga con `defer` después de `site.js` y necesita `mejoras.css`. No modifica `site.js`. |
+| `site/index.html` | La portada publicada con **tres únicos cambios**: `class="has-bar home"` en el `<body>`, el `<link>` a `mejoras.css` y el `<script>` de `mejoras.js`. |
 | `site/assets/site.css`, `site/assets/site.js` | Copias **idénticas** a las publicadas (una prueba lo verifica). No se modifican. |
 | `docs/cambios.md` | Tabla antes/después con el porqué de cada cambio y la guía de integración. |
 | `docs/auditoria.md` | Auditoría de la web publicada: hallazgos con prioridad, norma (WCAG) y recomendación. |
@@ -25,9 +26,11 @@ Capa de mejoras de diseño para **www.vyrseguritec.com.pe**, con su batería de 
    *Alternativa sin tocar el layout:* pega el contenido de `mejoras.css` al final de `public/assets/site.css`.
 3. En la **portada** agrega la clase `home` al `<body>` (hoy es `has-bar`; en las páginas internas es `page has-bar`).
    Sin esa clase solo se aplican las mejoras de todo el sitio (botones, foco, formularios, tarjetas, preguntas frecuentes).
-4. Compila, revisa en la URL de vista previa de Cloudflare y publica.
+4. *(Opcional, recomendado)* **Botón de pausa del carrusel:** copia `site/assets/mejoras.js` a `public/assets/` y agrega, justo
+   debajo del `<script>` de `site.js`, `<script src="/assets/mejoras.js?v=…" defer></script>`. Sin este paso todo lo demás funciona igual.
+5. Compila, revisa en la URL de vista previa de Cloudflare y publica.
 
-**Para revertir:** quita el `<link>` (o el bloque pegado) y la clase `home`. Nada más cambió.
+**Para revertir:** quita el `<link>` (o el bloque pegado), el `<script>` de `mejoras.js` (si lo agregaste) y la clase `home`. Nada más cambió.
 
 Limpieza opcional cuando ya esté validado: la capa **oculta con CSS** los 9 sobretítulos de la portada, la nota bajo los
 botones del héroe y el bloque derecho de la barra superior. Cuando quieras, bórralos del HTML (`index.astro`) y elimina esas reglas.
@@ -36,7 +39,7 @@ botones del héroe y el bloque derecho de la barra superior. Cuando quieras, bó
 
 ```bash
 npm install            # instala Playwright 1.56.1, axe-core y las tipografías de prueba
-npm test               # 220 pruebas en 5 anchos (1440, 1366, 768, 390 y 320 px); 43 son solo de escritorio o solo de celular
+npm test               # 290 pruebas en 5 anchos (1440, 1366, 768, 390 y 320 px); 47 son solo de escritorio o solo de celular
 CAPTURAS=1 npm run capturas   # regenera docs/capturas
 node tests/support/capturar.mjs despues /tmp/caps escritorio,movil   # captura rápida para revisar el diseño
 ```
@@ -46,7 +49,11 @@ Las pruebas **no usan red**: `tests/support/site.mjs` intercepta el dominio de p
 
 Qué verifican:
 
-- **Entrega** (`entrega.spec.ts`): `site.css`/`site.js` intactos; `index.html` solo difiere en la clase y el enlace; sin `!important`.
+- **Entrega** (`entrega.spec.ts`): `site.css`/`site.js` intactos; `index.html` solo difiere en la clase, el enlace y el script; sin `!important`;
+  `mejoras.js` sin red, cookies ni `eval`.
+- **Carrusel** (`carrusel.spec.ts`): el botón de pausa detiene y reanuda con ratón, teclado y sin foco (lector de pantalla); no se
+  reanuda al sacar el puntero o el foco; no se agrega con movimiento reducido; ningún control se pisa de 320 a 520 px. Usa el reloj
+  de Playwright (no espera tiempo real) y se comprobó rompiendo a propósito cada mecanismo para ver que las pruebas fallan.
 - **Portada** (`home.spec.ts`): sin errores de consola; sin desborde horizontal; formulario → mensaje de WhatsApp correcto;
   validación; menús; preguntas frecuentes; carrusel; áreas táctiles ≥ 44 px; anillo de foco; contraste; movimiento reducido.
 - **Accesibilidad** (`a11y.spec.ts`): axe-core WCAG 2.2 AA, 0 violaciones en la portada.
@@ -64,4 +71,6 @@ Versiones fijadas en `skills-lock.json`. Se dejaron fuera los de React Native, S
 
 - El dominio estaba bloqueado por la red del entorno: las capturas usan tipografías y fotos de prueba (la web real las carga de `/assets`).
 - Solo se probó contra 10 páginas internas de muestra; las demás comparten las mismas plantillas.
-- Lo que requiere cambiar HTML o JS (pausa del carrusel, fotos reales de obras) está listado en `docs/auditoria.md`.
+- Lo que requiere cambiar HTML o contenido (fotos reales de obras, textos repetidos, opciones largas de las listas) está listado en `docs/auditoria.md`.
+- `mejoras.js` se probó contra la copia de `site.js` del 04/10/2026. Si `site.js` cambia la forma de detener el carrusel
+  (hoy escucha `mouseenter`/`mouseleave`/`focusin`/`focusout` en `#slider`), corre `npm test`: las pruebas de `carrusel.spec.ts` avisan.

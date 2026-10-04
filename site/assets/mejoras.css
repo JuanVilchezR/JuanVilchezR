@@ -32,7 +32,7 @@ p{text-wrap:pretty}
 .fact b,.calc dd,.punto,.placa-datos dd,.tbl td.num,.tbl th.num{font-variant-numeric:tabular-nums}
 
 /* Anillo de foco: blanco sobre superficies oscuras, rojo sobre claras (≥3:1 en ambas) */
-.topbar,header.top,.hero,.phero,.coverage,.cta,footer.site,.svc-extra,.asesoria,.mobile-bar,.mega{--ring:#fff}
+.topbar,header.top,.hero,.phero,.coverage,.cta,footer.site,.svc-extra,.asesoria,.mobile-bar,.mega,.slider{--ring:#fff}
 .quote-card,.aside-card,.cards,.posts,.faq{--ring:var(--red)}
 a:focus-visible,.btn:focus-visible,summary:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline-color:var(--ring)}
 
@@ -57,6 +57,17 @@ details .ans a:hover,.sec-head a:hover,.calc-row a:hover{color:var(--red-dk);tex
 .slider .dots button{width:44px;height:44px}
 .slider .dots button::before{left:8px;right:8px;top:20px}
 .slider .dots button:focus-visible{outline-offset:-3px}
+/* Botón de pausa del carrusel: lo agrega mejoras.js (WCAG 2.2.2) al inicio de la fila de puntos, fuera del dibujo */
+.slider-pausa{position:absolute;left:6px;bottom:0;z-index:2;width:44px;height:44px;padding:0;display:grid;place-items:center;border:0;border-radius:50%;background:none;color:rgba(255,255,255,.88);cursor:pointer;transition:background-color .16s,color .16s,transform .16s var(--ease-out)}
+.slider-pausa:active{transform:scale(.97)}
+.slider-pausa:focus-visible{outline-offset:-9px}   /* el anillo rodea el icono sin subir hasta el texto del pie */
+.slider.con-pausa .dots{left:50px;right:114px}     /* en celular los puntos se encogen (mín. 26 px) para no pisar las flechas */
+.slider.con-pausa .dots button{min-width:26px}
+.slider-pausa svg{grid-area:1/1;width:18px;height:18px;fill:currentColor;transition:opacity .16s var(--ease-out),transform .16s var(--ease-out)}
+.slider-pausa .i-play{opacity:0;transform:scale(.6)}
+.slider-pausa[data-pausado="true"] .i-pausa{opacity:0;transform:scale(.6)}
+.slider-pausa[data-pausado="true"] .i-play{opacity:1;transform:none}
+@media (hover:hover){.slider-pausa:hover{background:rgba(255,255,255,.14);color:#fff}}
 .track{transition:transform .6s var(--ease-out)}
 summary{min-height:44px;align-items:center}
 .cities a{min-height:56px}
@@ -275,7 +286,7 @@ body.home .slider{border-radius:var(--r-card)}
   body.home .slide{display:flex;flex-direction:column}
   body.home .slide svg{flex:none;height:auto;aspect-ratio:4/3}
   body.home .slide figcaption{position:static;background:none;padding:4px 16px 64px}
-  body.home .slider .arrow,body.home .slider .dots{bottom:10px}
+  body.home .slider .arrow,body.home .slider .dots,body.home .slider-pausa{bottom:10px}
 }
 @media (max-width:360px){body.home .slider .dots button{width:36px}}
 body.home .cat-home a{position:relative;overflow:hidden;border-radius:var(--r-card);border-top-width:0;padding-top:18px}

@@ -6,8 +6,9 @@ import { test, expect } from '@playwright/test';
 /**
  * Garantiza que la entrega no toca nada fuera de lo acordado:
  *  · site.css y site.js son idénticos a lo publicado (no se reescriben).
- *  · site/index.html difiere de lo publicado SOLO en la clase "home" del <body> y en el enlace a mejoras.css.
- *    Es decir: textos, rutas, campos de formularios y atributos data-evento quedan intactos.
+ *  · site/index.html difiere de lo publicado SOLO en la clase "home" del <body>, el enlace a mejoras.css
+ *    y el script (opcional) mejoras.js. Es decir: textos, rutas, campos de formularios y atributos
+ *    data-evento quedan intactos.
  */
 const raiz = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const leer = (p: string) => fs.readFileSync(path.join(raiz, p), 'utf8');
@@ -17,13 +18,22 @@ test('site.css y site.js entregados son idénticos a los publicados', () => {
   expect(leer('site/assets/site.js')).toBe(leer('tests/fixtures/baseline/site.js'));
 });
 
-test('index.html solo añade class="home" y el enlace a mejoras.css', () => {
+test('index.html solo añade class="home", el enlace a mejoras.css y el script mejoras.js', () => {
   const base = leer('tests/fixtures/baseline/index.html');
   const nuevo = leer('site/index.html');
   const revertido = nuevo
     .replace('<body class="has-bar home">', '<body class="has-bar">')
-    .replace(/<link rel="stylesheet" href="[^"]*assets\/mejoras\.css[^"]*">/, '');
+    .replace(/<link rel="stylesheet" href="[^"]*assets\/mejoras\.css[^"]*">/, '')
+    .replace(/<script src="[^"]*assets\/mejoras\.js[^"]*" defer><\/script>/, '');
   expect(revertido).toBe(base);
+});
+
+test('mejoras.js no usa red, cookies ni eval, no lleva raya larga y solo toca el carrusel', () => {
+  const js = leer('site/assets/mejoras.js');
+  expect(js).not.toMatch(/https?:\/\//);
+  expect(js).not.toMatch(/fetch\(|XMLHttpRequest|sendBeacon|document\.cookie|localStorage|eval\(|new Function/);
+  expect(js).not.toMatch(/—/);
+  expect(js).toMatch(/getElementById\('slider'\)/);
 });
 
 test('mejoras.css no usa !important ni raya larga y no pide recursos externos', () => {

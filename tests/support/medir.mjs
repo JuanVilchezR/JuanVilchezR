@@ -10,18 +10,22 @@ const VISTAS = {
   'celular 390x844': { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true },
   'celular chico 320x640': { viewport: { width: 320, height: 640 }, isMobile: true, hasTouch: true },
 };
-const OBJETIVOS = ['.menu-btn', 'header .btn-wa', '.hero .ctas .btn', '.mobile-bar .btn', '.quote-card input', '.quote-card select', '.quote-card button[type=submit]', '.slider .arrow', '.slider .dots button', '#preguntas summary', '.cities a'];
+const OBJETIVOS = ['.menu-btn', 'header .btn-wa', '.hero .ctas .btn', '.mobile-bar .btn', '.quote-card input', '.quote-card select', '.quote-card button[type=submit]', '.slider .arrow', '.slider .dots button', '.slider-pausa', '#preguntas summary', '.cities a'];
 
 const navegador = await chromium.launch();
 const filas = [];
 for (const [vista, opts] of Object.entries(VISTAS)) {
   for (const variante of ['antes', 'despues']) {
-    const ctx = await navegador.newContext({ ...opts, locale: 'es-PE', reducedMotion: 'reduce' });
+    // Con movimiento normal (mejoras.js agrega el botón de pausa solo si hay avance automático); el reloj se detiene
+    // al final para que el carrusel no cambie de diapositiva (su pie cambia de alto en celular) mientras se mide.
+    const ctx = await navegador.newContext({ ...opts, locale: 'es-PE' });
     await montarSitio(ctx, variante);
     const p = await ctx.newPage();
+    await p.clock.install();
     await p.goto(ORIGEN + '/');
     await cargarPerezosas(p);
     await estable(p);
+    await p.clock.pauseAt((await p.evaluate(() => Date.now())) + 500);
     const m = await p.evaluate((objetivos) => {
       const lum = (c) => { const [r, g, b] = c.match(/[\d.]+/g).slice(0, 3).map(Number).map((v) => { const s = v / 255; return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4; }); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
       const cr = (a, b) => { const [x, y] = [lum(a), lum(b)]; return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
@@ -50,6 +54,6 @@ for (const [vista, opts] of Object.entries(VISTAS)) {
 }
 await navegador.close();
 
-const css = fs.readFileSync(`${RAIZ}/site/assets/mejoras.css`);
-console.log(JSON.stringify({ mejorasCss: { bytes: css.length, gzip: zlib.gzipSync(css).length, brotli: zlib.brotliCompressSync(css).length } }));
+const peso = (archivo) => { const b = fs.readFileSync(`${RAIZ}/site/assets/${archivo}`); return { bytes: b.length, gzip: zlib.gzipSync(b).length, brotli: zlib.brotliCompressSync(b).length }; };
+console.log(JSON.stringify({ mejorasCss: peso('mejoras.css'), mejorasJs: peso('mejoras.js') }));
 for (const f of filas) console.log(JSON.stringify(f));

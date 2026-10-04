@@ -134,11 +134,11 @@ test.describe('portada: ergonomía y accesibilidad de uso', () => {
     test.skip((viewport?.width ?? 0) > MOVIL, 'solo celular');
     await page.goto('/');
     await estable(page);
-    const selectores = ['.menu-btn', 'header .btn-wa', '.hero .ctas .btn', '.mobile-bar .btn', '.quote-card input:not([type=hidden])', '.quote-card select', '.quote-card button[type=submit]', '.slider .arrow', '.slider .dots button', '#preguntas summary', '.svc-card ul a', '.sector .acciones a'];
+    const selectores = ['.menu-btn', 'header .btn-wa', '.hero .ctas .btn', '.mobile-bar .btn', '.quote-card input:not([type=hidden])', '.quote-card select', '.quote-card button[type=submit]', '.slider .arrow', '.slider .dots button', '.slider-pausa', '#preguntas summary', '.svc-card ul a', '.sector .acciones a'];
     const pequenos: string[] = [];
     for (const sel of selectores) {
-      // En 320 px los 4 puntos del carrusel miden 36 px de ancho para no pisar las flechas (siguen siendo de 44 px de alto)
-      const minAncho = sel === '.slider .dots button' && (viewport?.width ?? 0) <= 360 ? 35.5 : 43.5;
+      // En 320 px los 4 puntos del carrusel se encogen (hasta 26 px de ancho) para caber junto al botón de pausa y las flechas; siguen siendo de 44 px de alto
+      const minAncho = sel === '.slider .dots button' && (viewport?.width ?? 0) <= 360 ? 25.5 : 43.5;
       for (const el of await page.locator(sel).all()) {
         const caja = await el.boundingBox();
         if (caja && (caja.height < 43.5 || caja.width < minAncho)) pequenos.push(`${sel}: ${Math.round(caja.width)}x${Math.round(caja.height)}`);
