@@ -11,7 +11,7 @@ fotos de prueba); no se midió con Lighthouse ni con lector de pantalla real; la
 | # | Dimensión | Publicada | Con mejoras | Hallazgo principal |
 | --- | --- | :-: | :-: | --- |
 | 1 | Accesibilidad | 2 | 3 | Contraste del texto blanco sobre el verde de WhatsApp: 3,09:1 (axe: 1 fallo *serious*). Ahora 5,02:1 y 0 violaciones. Falta pausa del carrusel |
-| 2 | Rendimiento | 3 | 3 | Héroe sin imagen (el LCP es texto), fuentes con *preload*, imágenes con ancho y alto. La capa suma 5,5 KB (gzip) |
+| 2 | Rendimiento | 3 | 3 | Héroe sin imagen (el LCP es texto), fuentes con *preload*, imágenes con ancho y alto. La capa suma 6,0 KB (gzip) |
 | 3 | Tema / tokens | 3 | 3 | Tokens en `:root`, pero redefinidos en 3 capas sucesivas del CSS |
 | 4 | Responsive | 3 | 4 | A 320 px la cabecera y la barra inferior medían 370 px (50 px de desborde). Corregido |
 | 5 | Integridad de la implementación | 3 | 3 | Sistema coherente de "plano de ingeniería"; plantilla repetida en cada sección (9 sobretítulos, cifras en grande, 5 llamados a WhatsApp) |
@@ -93,12 +93,12 @@ imagen (LCP de texto), imágenes con ancho y alto, mensaje de WhatsApp armado co
 | Contraste texto del botón de WhatsApp | 3,09 → **5,02** | 3,09 → **5,02** | 3,09 → **5,02** |
 | Contraste del borde de los campos | 1,88 → **3,36** | 1,88 → **3,36** | 1,88 → **3,36** |
 | Desborde horizontal | 0 → 0 | 0 → 0 | 50 px → **0** |
-| Objetivos táctiles < 44 px (medidos) | 14 → **0** | 9 → **0** | 9 → **0** |
+| Objetivos táctiles < 44 px (medidos) | 14 → **0** | 9 → **0** | 9 → **4** (los 4 puntos del carrusel miden 36×44 para no pisar las flechas) |
 | Sobretítulos visibles | 9 → **0** | 9 → **0** | 9 → **0** |
 | Alto del formulario | 690 → **656** px | 900 → **853** px | 915 → **867** px |
 | Alto del héroe | 970 → **949** px | 2006 → **1767** px | 2168 → **1877** px |
-| Alto de la página | 8754 → 9191 px | 16 569 → **16 042** px | 17 723 → **17 114** px |
+| Alto de la página | 8754 → 9191 px | 16 569 → 16 760 px | 17 723 → 17 854 px |
 | Violaciones axe-core (WCAG 2.2 AA) | 1 → **0** | 1 → **0** | 2 → **0** |
-| Peso añadido (CSS) | 17,8 KB · 5,5 KB gzip · 4,8 KB brotli | | |
+| Peso añadido (CSS) | 19,7 KB · 6,0 KB gzip · 5,3 KB brotli | | |
 
-En escritorio la página crece 437 px porque se dio más aire entre secciones; en celular se acorta un 3 %.
+La página crece 437 px en escritorio (más aire entre secciones) y 191 px en celular (1 %, por los sub-enlaces de 44 px); el héroe se acorta 21 px en escritorio y 239 px en celular.

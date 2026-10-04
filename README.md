@@ -15,7 +15,7 @@ Capa de mejoras de diseño para **www.vyrseguritec.com.pe**, con su batería de 
 | `site/assets/site.css`, `site/assets/site.js` | Copias **idénticas** a las publicadas (una prueba lo verifica). No se modifican. |
 | `docs/cambios.md` | Tabla antes/después con el porqué de cada cambio y la guía de integración. |
 | `docs/auditoria.md` | Auditoría de la web publicada: hallazgos con prioridad, norma (WCAG) y recomendación. |
-| `docs/capturas/` | Capturas antes/después (escritorio y celular). |
+| `docs/capturas/` | Capturas antes/después (escritorio y celular, primera pantalla y página completa). Usan tipografías y fotos de prueba. |
 
 ## Cómo aplicarlo en tu proyecto Astro
 
@@ -36,7 +36,7 @@ botones del héroe y el bloque derecho de la barra superior. Cuando quieras, bó
 
 ```bash
 npm install            # instala Playwright 1.56.1, axe-core y las tipografías de prueba
-npm test               # 200 pruebas en 5 anchos (1440, 1366, 768, 390 y 320 px); 29 son solo de escritorio o solo de celular
+npm test               # 220 pruebas en 5 anchos (1440, 1366, 768, 390 y 320 px); 43 son solo de escritorio o solo de celular
 CAPTURAS=1 npm run capturas   # regenera docs/capturas
 node tests/support/capturar.mjs despues /tmp/caps escritorio,movil   # captura rápida para revisar el diseño
 ```
