@@ -2,6 +2,7 @@
 
 **Alcance:** portada y componentes compartidos del sitio. **Método:** capturas de escritorio y celular, lectura del HTML/CSS/JS
 publicados, axe-core (WCAG 2.2 AA) y mediciones con Playwright en 1440, 1366, 768, 390 y 320 px (`tests/support/medir.mjs`).
+**Revisión:** además, un segundo agente independiente revisó las capturas y el CSS (320–1920 px) y sus hallazgos se aplicaron (ver `docs/cambios.md`).
 **Límites:** el dominio estaba bloqueado por la red del entorno (se trabajó con una copia fiel del HTML/CSS/JS; tipografías y
 fotos de prueba); no se midió con Lighthouse ni con lector de pantalla real; las páginas internas se probaron en una muestra de 10.
 
@@ -53,7 +54,7 @@ Cada hallazgo: observación · norma y numeral · riesgo · recomendación · pr
 - *Norma:* WCAG 2.2 · 2.2.2 Pausar, detener, ocultar (nivel A). · *Riesgo:* en pantallas táctiles no hay forma de detenerlo. · *Recomendación:* botón "Pausar" (requiere HTML y JS). — **Pendiente** (fuera de una capa CSS).
 
 **7. Jerarquía de la primera pantalla**
-- *Observación:* 5 llamados a WhatsApp visibles (barra superior, cabecera, héroe, formulario, botón flotante); formulario de 690 px que empujaba los accesos y las cifras fuera de la pantalla; texto del héroe pegado arriba con un hueco debajo; en laptop de 1366×768 el botón de enviar quedaba cortado.
+- *Observación:* 5 llamados a WhatsApp visibles (barra superior, cabecera, héroe, formulario, botón flotante); formulario de 690 px que empujaba los accesos y las cifras fuera de la pantalla; texto del héroe pegado arriba con un hueco debajo; en una laptop de 1366×768 (≈650 px útiles con la barra del navegador) el botón de enviar quedaba cortado y el de WhatsApp del héroe, bajo el pliegue.
 - *Recomendación:* un camino principal (3 llamados, el flotante aparece al pasar el héroe), formulario de 656 px, texto centrado respecto a la ficha, y ajuste para pantallas de poca altura. — **Resuelto.**
 
 **8. Objetivo de clic pequeño en tarjetas y celdas**
@@ -72,7 +73,9 @@ Cada hallazgo: observación · norma y numeral · riesgo · recomendación · pr
 
 **13. Capas acumuladas en `site.css`** (v1 → Home v2 → Paleta → Auditoría → Catálogo): `--navy`, `--ink` y `--red` se redefinen 3 veces; hay colores fijos (`#8FE0A8`, `#FF5A4F`, `#15803D`). — **Pendiente** (consolidar cuando haya acceso al repositorio Astro).
 
-**14. Patrón de borde de color grueso a un lado** (`.callout`, `.descarga`: `border-left:4px`) en páginas internas. — **No se tocó** (fuera de la portada); candidato para una pasada posterior de páginas internas.
+**14. Listas desplegables en celular:** la opción elegida se corta a media palabra (por ejemplo, "…certificado de op"). *Norma:* sin numeral aplicable (usabilidad). *Recomendación:* acortar los textos de las opciones (contenido); `text-overflow` no actúa en `select`. — **Pendiente.**
+
+**15. Patrón de borde de color grueso a un lado** (`.callout`, `.descarga`: `border-left:4px`) en páginas internas. — **No se tocó** (fuera de la portada); candidato para una pasada posterior de páginas internas.
 
 ## Lo que está bien y se conservó
 

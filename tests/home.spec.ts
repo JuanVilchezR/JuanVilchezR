@@ -134,12 +134,14 @@ test.describe('portada: ergonomía y accesibilidad de uso', () => {
     test.skip((viewport?.width ?? 0) > MOVIL, 'solo celular');
     await page.goto('/');
     await estable(page);
-    const selectores = ['.menu-btn', 'header .btn-wa', '.hero .ctas .btn', '.mobile-bar .btn', '.quote-card input:not([type=hidden])', '.quote-card select', '.quote-card button[type=submit]', '.slider .arrow', '.slider .dots button', '#preguntas summary'];
+    const selectores = ['.menu-btn', 'header .btn-wa', '.hero .ctas .btn', '.mobile-bar .btn', '.quote-card input:not([type=hidden])', '.quote-card select', '.quote-card button[type=submit]', '.slider .arrow', '.slider .dots button', '#preguntas summary', '.svc-card ul a', '.sector .acciones a'];
     const pequenos: string[] = [];
     for (const sel of selectores) {
+      // En 320 px los 4 puntos del carrusel miden 36 px de ancho para no pisar las flechas (siguen siendo de 44 px de alto)
+      const minAncho = sel === '.slider .dots button' && (viewport?.width ?? 0) <= 360 ? 35.5 : 43.5;
       for (const el of await page.locator(sel).all()) {
         const caja = await el.boundingBox();
-        if (caja && (caja.height < 43.5 || caja.width < 43.5)) pequenos.push(`${sel}: ${Math.round(caja.width)}x${Math.round(caja.height)}`);
+        if (caja && (caja.height < 43.5 || caja.width < minAncho)) pequenos.push(`${sel}: ${Math.round(caja.width)}x${Math.round(caja.height)}`);
       }
     }
     expect(pequenos).toEqual([]);
@@ -177,6 +179,57 @@ test.describe('portada: ergonomía y accesibilidad de uso', () => {
       return { sel, fondo: c.backgroundColor, texto: c.color };
     }));
     for (const p of pares) expect(contraste(p.texto, p.fondo), p.sel).toBeGreaterThanOrEqual(4.5);
+  });
+
+  test('en laptop con 650 px útiles el botón de WhatsApp del héroe se ve completo', async ({ page, viewport }) => {
+    test.skip(!(viewport && viewport.width === 1366), 'solo laptop');
+    await page.setViewportSize({ width: 1366, height: 650 });
+    await page.goto('/');
+    await estable(page);
+    const caja = await page.locator('.hero .ctas .btn-wa').boundingBox();
+    expect(caja!.y + caja!.height).toBeLessThanOrEqual(650);
+  });
+
+  test('carrusel en celular: las flechas y los puntos no tapan el título ni la descripción', async ({ page, viewport }) => {
+    test.skip((viewport?.width ?? 0) > 520, 'solo celular');
+    await page.goto('/');
+    await estable(page);
+    for (let i = 0; i < 4; i++) {
+      const choques = await page.evaluate(() => {
+        const s = document.querySelector('.slider')!;
+        const activo = s.querySelector('.slide[aria-hidden="false"]')!;
+        const textos = [...activo.querySelectorAll('figcaption b, figcaption span')].map((e) => e.getBoundingClientRect());
+        const controles = [...s.querySelectorAll('.arrow, .dots button')].map((e) => e.getBoundingClientRect());
+        const cruza = (a: DOMRect, b: DOMRect) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+        return textos.flatMap((t) => controles.filter((c) => cruza(t, c))).length;
+      });
+      expect(choques, `diapositiva ${i + 1}`).toBe(0);
+      await page.locator('.slider .next').click();
+      await page.waitForTimeout(750); // el carrusel tarda 0,6 s en desplazarse
+    }
+  });
+
+  test('al pasar el puntero las tarjetas no se desplazan (sin temblor) y ganan sombra', async ({ page, viewport }) => {
+    test.skip((viewport?.width ?? 0) <= 1060, 'el puntero fino solo se prueba en escritorio');
+    await page.goto('/');
+    await estable(page);
+    const tarjeta = page.locator('.svc-card').first();
+    await tarjeta.scrollIntoViewIfNeeded();
+    const antes = await tarjeta.boundingBox();
+    expect(await tarjeta.evaluate((e) => getComputedStyle(e).boxShadow)).toBe('none');
+    await page.mouse.move(antes!.x + antes!.width / 2, antes!.y + antes!.height - 2); // borde inferior: donde temblaba
+    await page.waitForTimeout(400);
+    const durante = await tarjeta.boundingBox();
+    expect(Math.abs(durante!.y - antes!.y)).toBeLessThan(0.5);
+    expect(await tarjeta.evaluate((e) => getComputedStyle(e).boxShadow)).not.toBe('none');
+  });
+
+  test('tablet: la última celda de soluciones ocupa todo el ancho (sin hueco gris)', async ({ page, viewport }) => {
+    test.skip(!(viewport && viewport.width > 580 && viewport.width <= 900), 'solo tablet');
+    await page.goto('/');
+    await estable(page);
+    const m = await page.evaluate(() => ({ grilla: document.querySelector('.sector-grid')!.getBoundingClientRect().width, ultima: document.querySelector('.sector:last-child')!.getBoundingClientRect().width }));
+    expect(m.ultima).toBeGreaterThanOrEqual(m.grilla - 3);
   });
 });
 
