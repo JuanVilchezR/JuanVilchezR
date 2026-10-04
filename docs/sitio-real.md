@@ -1,9 +1,12 @@
 # Sitio real · rama `claude/mejoras-diseno-skills`
 
-Las mejoras ya están aplicadas en el código real de la web: repositorio
-[`JuanVilchezR/vyrseguritec-web`](https://github.com/JuanVilchezR/vyrseguritec-web), rama `claude/mejoras-diseno-skills`
-(5 commits sobre `main`). **No se fusionó a `main` ni se desplegó.** No se reescribió ningún texto de cliente, ruta, campo de
-formulario ni evento de analítica, salvo lo que se lista abajo.
+Las mejoras están **publicadas** en www.vyrseguritec.com.pe desde el 04/10/2026: la PR
+[#1](https://github.com/JuanVilchezR/vyrseguritec-web/pull/1) de `JuanVilchezR/vyrseguritec-web` (rama `claude/mejoras-diseno-skills`,
+5 commits) se fusionó a `main` con *squash* (commit `9c3f5b7`) y Cloudflare Workers Builds la desplegó en unos minutos. No se
+reescribió ningún texto de cliente, ruta, campo de formulario ni evento de analítica, salvo lo que se lista abajo.
+
+**Cómo revertir:** en GitHub, abrir la PR #1 y pulsar «Revert»; al fusionar la PR de reversión, Cloudflare vuelve a desplegar la
+versión anterior en cerca de un minuto.
 
 Criterio: *refinamiento que conserva la marca* (rojo `#D32F2F` + grafito, Archivo/IBM Plex, lenguaje de plano de ingeniería),
 con las skills Emil Kowalski (movimiento y detalle), Impeccable (calidad y detector), Taste (anti-plantilla) y UI/UX Pro Max
@@ -62,6 +65,11 @@ WEB_DIST=…/vyrseguritec-web/dist npx playwright test        # toda la suite
 WEB_DIST=…/dist WEB_DIST_ANTES=…/dist-de-main node tests/support/barrido.mjs despues salida.json   # barrido A/B de las 77 páginas
 ```
 
+Comprobación en producción (04/10/2026, tras el despliegue): `mejoras.css` responde 200; la portada, el catálogo y la landing cargan
+`site.css`, `mejoras.css` y `site.js` con un único sello de versión; la portada trae el botón de pausa, los accesos directos, el artículo de
+ITSE y ningún `.tb-right` ni sobretítulo; la compilación en modo producción (`PUBLIC_SITE_ENV=production`) pasó `verificar.mjs` y 371
+pruebas más sin fallos.
+
 `tests/segundo-lote.spec.ts` y `tests/todas-las-paginas.spec.ts` solo corren con `WEB_DIST`. Las pruebas nuevas fallan contra
 la compilación de `main` (comprobado por mutación), así que miden lo que cambió.
 
@@ -82,3 +90,6 @@ la compilación de `main` (comprobado por mutación), así que miden lo que camb
 - El detector de Impeccable deja 2 avisos (borde superior negro de 4 px en la placa de datos del catálogo y en las tarjetas de
   tipo de bomba) y 1 informativo (rejilla de plano en el héroe). Se mantienen por ser el motivo de la marca.
 - El único texto menor de 12 px es el lema del logotipo (10 px en escritorio).
+- Cloudflare compila las ramas que no son `main` y falla al instante (0 s, «Workers Builds» en rojo en la PR #1, sin vista previa),
+  mientras que la compilación de `main` funciona (publicó en cerca de un minuto). Conviene revisar en Cloudflare, en los ajustes de
+  compilación, el comando de despliegue para ramas que no son de producción. No afecta a la web publicada.
