@@ -6,6 +6,11 @@ Capa de mejoras de diseño para **www.vyrseguritec.com.pe**, con su batería de 
 > **no está en este repositorio**. Aquí se entrega una capa que se aplica sobre lo ya publicado, probada contra una
 > copia fiel del HTML/CSS/JS del 04/10/2026. No se reescribió ningún texto, ruta, campo de formulario ni evento de analítica.
 
+> **Actualización (04/10/2026):** las mejoras ya están aplicadas en el código real, en la rama `claude/mejoras-diseno-skills` de
+> [`JuanVilchezR/vyrseguritec-web`](https://github.com/JuanVilchezR/vyrseguritec-web) (sin fusionar a `main`). Qué cambió, resultados
+> y decisiones pendientes: [`docs/sitio-real.md`](docs/sitio-real.md). Las pruebas de este repositorio también corren contra la
+> compilación real con `WEB_DIST=…/vyrseguritec-web/dist` (ver ese documento).
+
 ## Qué se entrega
 
 | Archivo | Qué es |
