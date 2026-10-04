@@ -2,7 +2,7 @@
 
 Las mejoras ya están aplicadas en el código real de la web: repositorio
 [`JuanVilchezR/vyrseguritec-web`](https://github.com/JuanVilchezR/vyrseguritec-web), rama `claude/mejoras-diseno-skills`
-(4 commits sobre `main`). **No se fusionó a `main` ni se desplegó.** No se reescribió ningún texto de cliente, ruta, campo de
+(5 commits sobre `main`). **No se fusionó a `main` ni se desplegó.** No se reescribió ningún texto de cliente, ruta, campo de
 formulario ni evento de analítica, salvo lo que se lista abajo.
 
 Criterio: *refinamiento que conserva la marca* (rojo `#D32F2F` + grafito, Archivo/IBM Plex, lenguaje de plano de ingeniería),
