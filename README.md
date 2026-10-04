@@ -11,7 +11,7 @@ Capa de mejoras de diseño para **www.vyrseguritec.com.pe**, con su batería de 
 | Archivo | Qué es |
 | --- | --- |
 | `site/assets/mejoras.css` | **La mejora.** Se carga después de `site.css`. Reglas sin prefijo = todo el sitio; reglas `body.home` = solo la portada. |
-| `site/assets/mejoras.js` | **Opcional (2,6 KB).** Botón de pausa del carrusel (WCAG 2.2.2). Se carga con `defer` después de `site.js` y necesita `mejoras.css`. No modifica `site.js`. |
+| `site/assets/mejoras.js` | **Opcional (3,0 KB).** Botón de pausa del carrusel (WCAG 2.2.2). Se carga con `defer` después de `site.js` y necesita `mejoras.css`. No modifica `site.js`. |
 | `site/index.html` | La portada publicada con **tres únicos cambios**: `class="has-bar home"` en el `<body>`, el `<link>` a `mejoras.css` y el `<script>` de `mejoras.js`. |
 | `site/assets/site.css`, `site/assets/site.js` | Copias **idénticas** a las publicadas (una prueba lo verifica). No se modifican. |
 | `docs/cambios.md` | Tabla antes/después con el porqué de cada cambio y la guía de integración. |
