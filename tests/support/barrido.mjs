@@ -1,12 +1,13 @@
 // Barrido de todas las páginas de la compilación real (WEB_DIST) en escritorio y celular.
 // Uso:  WEB_DIST=…/dist [WEB_DIST_ANTES=…/dist] node tests/support/barrido.mjs <antes|despues> <salida.json>
 // Por página y ancho mide: errores de consola y de red, desborde horizontal, violaciones de axe (WCAG 2.2 AA),
-// encabezados (un solo h1, sin saltos de nivel), controles tapados por la cabecera o la barra fija al recibir el foco
-// (WCAG 2.4.11), textos menores de 12 px y objetivos táctiles menores de 24 y de 44 px.
+// encabezados (un solo h1, sin saltos de nivel), controles TOTALMENTE tapados por la cabecera o la barra fija al
+// recibir el foco (WCAG 2.4.11, ver foco.mjs), textos menores de 12 px y objetivos táctiles menores de 24 y de 44 px.
 import fs from 'node:fs';
 import { chromium } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { montarSitio, estable, rutasReales, ORIGEN, MODO_REAL } from './site.mjs';
+import { focoTapadoEnPagina } from './foco.mjs';
 
 if (!MODO_REAL) { console.error('Falta WEB_DIST (carpeta dist/ compilada).'); process.exit(1); }
 const variante = process.argv[2] === 'antes' ? 'antes' : 'despues';
@@ -34,25 +35,12 @@ async function medir(page) {
     // objetivos táctiles
     const objetivos = [...document.querySelectorAll('a[href],button,input:not([type=hidden]),select,textarea,summary')].filter(visible).filter((e) => !e.closest('.skip'));
     const menores = (min) => objetivos.filter((e) => { const r = e.getBoundingClientRect(); return (r.width < min || r.height < min) && getComputedStyle(e).display !== 'inline'; }).length;
-    // foco tapado
-    let tapados = 0; const ejemplos = [];
-    const foco = objetivos.filter((e) => !e.closest('[hidden],[inert]')).slice(0, 120);
-    for (const e of foco) {
-      e.focus({ preventScroll: false });
-      await new Promise((r) => requestAnimationFrame(r));
-      const r = e.getBoundingClientRect();
-      if (r.width === 0 || r.bottom < 0 || r.top > innerHeight) continue;
-      const x = Math.min(Math.max(r.left + r.width / 2, 1), innerWidth - 1), y = Math.min(Math.max(r.top + Math.min(r.height / 2, 12), 1), innerHeight - 1);
-      const arriba = document.elementFromPoint(x, y);
-      if (arriba && arriba !== e && !e.contains(arriba) && !arriba.contains(e)) { tapados++; if (ejemplos.length < 3) ejemplos.push(`${e.tagName.toLowerCase()}${e.className ? '.' + String(e.className).split(' ')[0] : ''} tapado por ${arriba.tagName.toLowerCase()}${arriba.className ? '.' + String(arriba.className).split(' ')[0] : ''}`); }
-    }
     window.scrollTo(0, 0);
     return {
       alto: document.documentElement.scrollHeight,
       desborde: Math.max(0, document.documentElement.scrollWidth - document.documentElement.clientWidth),
       h1: hs.filter((n) => n === 1).length, saltosEncabezado: saltos,
       textosMenoresA12: [...chicos].slice(0, 6), objetivosMenoresA24: menores(24), objetivosMenoresA44: menores(44),
-      focoTapado: tapados, ejemplosFocoTapado: ejemplos,
     };
   });
 }
@@ -74,6 +62,8 @@ for (const [vista, opts] of Object.entries(VISTAS)) {
       await page.goto(ORIGEN + ruta, { waitUntil: 'load' });
       await estable(page);
       const m = await medir(page);
+      const tapados = await page.evaluate(focoTapadoEnPagina, 120);
+      m.focoTapado = tapados.length; m.ejemplosFocoTapado = tapados.slice(0, 3);
       const axe = await new AxeBuilder({ page }).withTags(REGLAS).analyze();
       const violaciones = axe.violations.map((v) => ({ regla: v.id, impacto: v.impact, nodos: v.nodes.length, ejemplo: v.nodes[0]?.target.join(' ') }));
       (resultado.paginas[ruta] ??= {})[vista] = { ...m, violaciones, errores: [...errores] };
