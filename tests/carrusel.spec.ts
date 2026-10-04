@@ -26,6 +26,7 @@ async function abrirConRelojDetenido(page: Page) {
 
 const AVANCE = 5100; // un solo avance (site.js usa 5000 ms)
 const LARGO = 12_000; // dos avances: si el carrusel siguiera activo, la diapositiva cambiaría
+const ESCRITORIO = 1060; // por encima de este ancho el sitio muestra el mega-menú de servicios
 
 test.describe('carrusel: botón de pausa', () => {
   const medir = (page: Page) => page.evaluate(() => {
@@ -40,6 +41,8 @@ test.describe('carrusel: botón de pausa', () => {
     const activo = s.querySelector('.slide[aria-hidden="false"]')!;
     const controles = [...s.querySelectorAll('.arrow, .dots button')].map(caja);
     const textos = [...activo.querySelectorAll('figcaption b, figcaption span')].map(caja);
+    const punto1 = caja(s.querySelector('.dots button')!);
+    const anterior = caja(s.querySelector('.prev')!);
     return {
       primero: s.querySelector('button, a[href], [tabindex]') === b,
       ancho: pb.width,
@@ -47,18 +50,25 @@ test.describe('carrusel: botón de pausa', () => {
       dentro: pb.left >= ps.left && pb.right <= ps.right && pb.top >= ps.top && pb.bottom <= ps.bottom,
       choquesControles: controles.filter((o) => cruza(pb, o)).length, // las áreas de toque no se pisan
       choquesTexto: textos.filter((o) => cruza(icono, o)).length, // el icono no tapa el título ni la descripción
+      alineadoConPuntos: punto1.width === 0 || Math.abs(pb.bottom - punto1.bottom) < 0.5, // misma fila que los puntos
+      alineadoConFlechas: innerWidth > 520 || Math.abs(pb.bottom - anterior.bottom) < 0.5, // en celular, también que las flechas
+      iconos: [getComputedStyle(b.querySelector('.i-pausa')!).opacity, getComputedStyle(b.querySelector('.i-play')!).opacity],
       nombre: b.getAttribute('aria-label'),
+      titulo: b.getAttribute('title'),
       tipo: b.getAttribute('type'),
       cursor: getComputedStyle(b).cursor,
     };
   });
 
-  test('es el primer control del carrusel, mide 44 px y se anuncia', async ({ page }) => {
+  test('es el primer control del carrusel, mide 44 px, se anuncia y muestra un solo icono', async ({ page }) => {
     await page.goto('/');
     await estable(page);
     const r = await medir(page);
     expect(r).not.toBeNull();
-    expect(r).toMatchObject({ primero: true, dentro: true, tipo: 'button', cursor: 'pointer' });
+    expect(r).toMatchObject({
+      primero: true, dentro: true, tipo: 'button', cursor: 'pointer', titulo: null, // sin title: duplicaría el nombre accesible
+      alineadoConPuntos: true, alineadoConFlechas: true, iconos: ['1', '0'],
+    });
     expect(r!.ancho).toBeGreaterThanOrEqual(43.5);
     expect(r!.alto).toBeGreaterThanOrEqual(43.5);
     expect(r!.nombre).toBe('Pausar el cambio automático de imágenes');
@@ -78,35 +88,53 @@ test.describe('carrusel: botón de pausa', () => {
   test('en cualquier ancho de celular ningún control del carrusel se pisa con otro', async ({ page }, info) => {
     test.skip(info.project.name !== 'movil', 'los anchos se recorren dentro de un solo proyecto');
     await page.goto('/');
-    for (const ancho of [320, 340, 360, 375, 390, 414, 430, 480, 520]) {
+    // 280 px es una pantalla plegada; hasta 315 px los puntos se ocultan porque ya no caben junto al botón y las flechas
+    for (const ancho of [280, 290, 300, 310, 315, 316, 318, 320, 340, 360, 375, 390, 414, 430, 480, 520]) {
       await page.setViewportSize({ width: ancho, height: 800 });
       await estable(page);
       const r = await page.evaluate(() => {
         const s = document.querySelector('#slider')!;
+        const puntos = [...s.querySelectorAll('.dots button')].map((b) => b.getBoundingClientRect()).filter((c) => c.width > 0);
         const cajas: [string, DOMRect][] = [
           ['pausa', s.querySelector('.slider-pausa')!.getBoundingClientRect()],
           ['anterior', s.querySelector('.prev')!.getBoundingClientRect()],
           ['siguiente', s.querySelector('.next')!.getBoundingClientRect()],
-          ...[...s.querySelectorAll('.dots button')].map((b, i): [string, DOMRect] => [`punto ${i + 1}`, b.getBoundingClientRect()]),
+          ...puntos.map((c, i): [string, DOMRect] => [`punto ${i + 1}`, c]),
         ];
         const cruza = (a: DOMRect, b: DOMRect) => a.left < b.right - 0.5 && a.right > b.left + 0.5 && a.top < b.bottom && a.bottom > b.top;
         const choques: string[] = [];
         for (let i = 0; i < cajas.length; i++) for (let j = i + 1; j < cajas.length; j++) if (cruza(cajas[i][1], cajas[j][1])) choques.push(`${cajas[i][0]} y ${cajas[j][0]}`);
-        return { choques, puntoMasAngosto: Math.min(...cajas.filter(([n]) => n.startsWith('punto')).map(([, c]) => c.width)) };
+        return { choques, puntosVisibles: puntos.length, puntoMasAngosto: puntos.length ? Math.min(...puntos.map((c) => c.width)) : -1 };
       });
       expect(r.choques, `${ancho} px`).toEqual([]);
-      expect(r.puntoMasAngosto, `${ancho} px`).toBeGreaterThanOrEqual(25.5);
+      if (ancho <= 315) {
+        expect(r.puntosVisibles, `${ancho} px`).toBe(0);
+      } else {
+        expect(r.puntosVisibles, `${ancho} px`).toBe(4);
+        expect(r.puntoMasAngosto, `${ancho} px`).toBeGreaterThanOrEqual(25.5);
+      }
     }
   });
 
-  test('foco visible: anillo blanco sobre el fondo oscuro del carrusel', async ({ page }) => {
+  test('foco visible: anillo blanco dentro del botón, sin subir hasta el texto del pie', async ({ page }) => {
     await page.goto('/');
+    await estable(page);
     await page.locator('.slider-pausa').focus();
-    const anillo = await page.locator('.slider-pausa').evaluate((e) => { const c = getComputedStyle(e); return { estilo: c.outlineStyle, color: c.outlineColor }; });
-    expect(anillo).toMatchObject({ estilo: 'solid', color: 'rgb(255, 255, 255)' });
+    const r = await page.evaluate(() => {
+      const b = document.querySelector('.slider-pausa') as HTMLElement;
+      const cs = getComputedStyle(b);
+      const caja = b.getBoundingClientRect();
+      const d = parseFloat(cs.outlineOffset) + parseFloat(cs.outlineWidth); // borde exterior del anillo respecto del botón (negativo: hacia dentro)
+      const anillo = { left: caja.left - d, right: caja.right + d, top: caja.top - d, bottom: caja.bottom + d };
+      const textos = [...document.querySelectorAll('#slider .slide[aria-hidden="false"] figcaption b, #slider .slide[aria-hidden="false"] figcaption span')].map((e) => e.getBoundingClientRect());
+      const choques = textos.filter((t) => anillo.left < t.right && anillo.right > t.left && anillo.top < t.bottom && anillo.bottom > t.top).length;
+      return { estilo: cs.outlineStyle, color: cs.outlineColor, d, choques };
+    });
+    expect(r).toMatchObject({ estilo: 'solid', color: 'rgb(255, 255, 255)', choques: 0 });
+    expect(r.d).toBeLessThanOrEqual(0); // el anillo no sobresale del botón: no se recorta contra el borde del carrusel
   });
 
-  test('pausa: la diapositiva deja de cambiar y no se reanuda al salir el puntero', async ({ page }) => {
+  test('pausa: la diapositiva deja de cambiar, no se reanuda al salir el puntero y el icono cambia', async ({ page }) => {
     await abrirConRelojDetenido(page);
     const boton = page.locator('.slider-pausa');
     const inicio = await activa(page);
@@ -116,6 +144,8 @@ test.describe('carrusel: botón de pausa', () => {
     await boton.click(); // el puntero queda sobre el carrusel
     await expect(boton).toHaveAttribute('aria-label', 'Reanudar el cambio automático de imágenes');
     await expect(boton).toHaveAttribute('data-pausado', 'true');
+    // un solo icono a la vez: la transición de opacidad dura 0,16 s en tiempo real
+    await expect.poll(() => boton.evaluate((e) => [getComputedStyle(e.querySelector('.i-pausa')!).opacity, getComputedStyle(e.querySelector('.i-play')!).opacity])).toEqual(['0', '1']);
     await page.mouse.move(2, 2); // el puntero sale: site.js reanudaría con mouseleave
     const congelada = await activa(page);
     await page.clock.runFor(LARGO);
@@ -134,6 +164,7 @@ test.describe('carrusel: botón de pausa', () => {
     await boton.click(); // reanudar (el puntero vuelve a pasar por el carrusel)
     await expect(boton).toHaveAttribute('aria-label', 'Pausar el cambio automático de imágenes');
     await expect(boton).toHaveAttribute('data-pausado', 'false');
+    await expect.poll(() => boton.evaluate((e) => [getComputedStyle(e.querySelector('.i-pausa')!).opacity, getComputedStyle(e.querySelector('.i-play')!).opacity])).toEqual(['1', '0']);
     await page.mouse.move(2, 2);
     await page.clock.runFor(AVANCE);
     expect(await activa(page)).toBe((congelada + 1) % 4);
@@ -151,12 +182,34 @@ test.describe('carrusel: botón de pausa', () => {
     await page.clock.runFor(LARGO);
     expect(await activa(page), 'foco dentro del carrusel').toBe(congelada);
 
+    await page.keyboard.press('Shift+Tab'); // y de vuelta al botón
+    await expect(boton).toBeFocused();
+    await page.clock.runFor(LARGO);
+    expect(await activa(page), 'foco de vuelta en el botón').toBe(congelada);
+
     await page.evaluate(() => (document.activeElement as HTMLElement).blur()); // el foco sale del carrusel: focusout
     await page.clock.runFor(LARGO);
     expect(await activa(page), 'foco fuera del carrusel').toBe(congelada);
 
     await boton.focus();
     await page.keyboard.press('Space');
+    await expect(boton).toHaveAttribute('data-pausado', 'false');
+    await page.clock.runFor(AVANCE);
+    expect(await activa(page)).toBe((congelada + 1) % 4);
+  });
+
+  test('táctil: tocar el botón pausa, tocar fuera no reanuda y volver a tocarlo reanuda', async ({ page, hasTouch }) => {
+    test.skip(!hasTouch, 'solo pantallas táctiles');
+    await abrirConRelojDetenido(page);
+    const boton = page.locator('.slider-pausa');
+    await boton.tap();
+    await expect(boton).toHaveAttribute('data-pausado', 'true');
+    await page.touchscreen.tap(2, 2); // toque fuera del carrusel: el navegador envía mouseleave
+    const congelada = await activa(page);
+    await page.clock.runFor(LARGO);
+    expect(await activa(page)).toBe(congelada);
+
+    await boton.tap();
     await expect(boton).toHaveAttribute('data-pausado', 'false');
     await page.clock.runFor(AVANCE);
     expect(await activa(page)).toBe((congelada + 1) % 4);
@@ -189,6 +242,21 @@ test.describe('carrusel: botón de pausa', () => {
     expect(await activa(page)).toBe(0);
   });
 
+  test('con pausa, cambiar de pestaña y volver no reanuda el avance', async ({ page }) => {
+    await abrirConRelojDetenido(page);
+    await page.locator('.slider-pausa').click();
+    await page.mouse.move(2, 2);
+    const congelada = await activa(page);
+    const ocultar = (oculto: boolean) => page.evaluate((o) => {
+      Object.defineProperty(document, 'hidden', { configurable: true, get: () => o });
+      document.dispatchEvent(new Event('visibilitychange')); // site.js reanuda al volver a ser visible
+    }, oculto);
+    await ocultar(true);
+    await ocultar(false);
+    await page.clock.runFor(LARGO);
+    expect(await activa(page)).toBe(congelada);
+  });
+
   test('sin pausar, site.js sigue igual: se detiene con el puntero y reanuda al salir', async ({ page }) => {
     await abrirConRelojDetenido(page);
     await page.locator('#slider').hover();
@@ -200,12 +268,59 @@ test.describe('carrusel: botón de pausa', () => {
     expect(await activa(page), 'al salir el puntero reanuda').toBe((quieta + 1) % 4);
   });
 
+  test.describe('no interfiere con otros manejadores del sitio', () => {
+    // El interceptor solo debe retener los eventos del propio carrusel; el mega-menú de servicios
+    // (site.js) también se cierra con mouseleave y focusout y no debe quedar abierto.
+    test('con el carrusel en pausa, el mega-menú se sigue cerrando al salir el puntero', async ({ page, viewport }) => {
+      test.skip((viewport?.width ?? 0) <= ESCRITORIO, 'el mega-menú solo existe en escritorio');
+      await abrirConRelojDetenido(page);
+      await page.locator('.slider-pausa').click();
+      const panel = page.locator('#mega-servicios');
+      await page.locator('.mm-btn').hover();
+      await expect(panel).toBeVisible();
+      await page.mouse.move(2, 2); // fuera del botón y del panel (que cuelga debajo de la cabecera)
+      await page.clock.runFor(400); // el cierre espera 220 ms
+      await expect(panel).toBeHidden();
+    });
+
+    test('con el carrusel en pausa, el mega-menú se sigue cerrando al sacar el foco', async ({ page, viewport }) => {
+      test.skip((viewport?.width ?? 0) <= ESCRITORIO, 'el mega-menú solo existe en escritorio');
+      await abrirConRelojDetenido(page);
+      await page.locator('.slider-pausa').click();
+      await page.locator('.mm-btn').focus();
+      await page.keyboard.press('Enter'); // abre y enfoca el primer enlace del panel
+      await expect(page.locator('#mega-servicios')).toBeVisible();
+      await page.locator('.hero a').first().focus(); // foco fuera del panel
+      await expect(page.locator('#mega-servicios')).toBeHidden();
+    });
+
+    test('un focusout o mouseleave sintético sobre window con la pausa activa no produce errores', async ({ page }) => {
+      const errores = vigilarErrores(page);
+      await abrirConRelojDetenido(page);
+      await page.locator('.slider-pausa').click();
+      await page.evaluate(() => {
+        window.dispatchEvent(new FocusEvent('focusout'));
+        window.dispatchEvent(new MouseEvent('mouseleave'));
+        document.dispatchEvent(new FocusEvent('focusout'));
+      });
+      expect(errores).toEqual([]);
+    });
+  });
+
   test('en páginas sin carrusel mejoras.js no hace nada ni da errores', async ({ page }) => {
     const errores = vigilarErrores(page);
     await page.goto('/contacto/');
     await estable(page);
     await expect(page.locator('.slider-pausa')).toHaveCount(0);
     expect(errores).toEqual([]);
+  });
+
+  test('si falta mejoras.css el botón no se muestra: no queda un control sin estilo empujando el carrusel', async ({ page }) => {
+    await page.route(/\/assets\/mejoras\.css/, (r) => r.fulfill({ status: 404, body: '' })); // la ruta de la página manda sobre la del contexto; con regex porque la portada lleva ?v=
+    await page.goto('/');
+    await expect(page.locator('.slider .dots button')).toHaveCount(4);
+    await expect(page.locator('.slider-pausa')).toHaveCount(0);
+    await expect(page.locator('#slider')).not.toHaveClass(/con-pausa/);
   });
 
   test('con movimiento reducido no se agrega el botón: site.js no avanza solo, no hay nada que pausar', async ({ page }) => {

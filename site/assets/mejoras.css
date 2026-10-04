@@ -4,6 +4,8 @@
    formularios ni eventos de analítica (data-evento). Para revertir, basta quitar este archivo.
    · Reglas sin prefijo  → mejoras de todo el sitio (botones, foco, formularios, tarjetas, FAQ).
    · Reglas "body.home"  → solo la portada: agregar class="home" al <body> de la portada.
+   · Reglas ".slider-pausa" y ".con-pausa" → estilos del botón de pausa del carrusel; solo se usan si
+     se carga mejoras.js (opcional); sin ese script quedan sin efecto.
    Movimiento: transform y opacity únicamente, curvas de salida fuertes, nada bajo prefers-reduced-motion.
    ---------------------------------------------------------------------------------------------- */
 
@@ -61,8 +63,7 @@ details .ans a:hover,.sec-head a:hover,.calc-row a:hover{color:var(--red-dk);tex
 .slider-pausa{position:absolute;left:6px;bottom:0;z-index:2;width:44px;height:44px;padding:0;display:grid;place-items:center;border:0;border-radius:50%;background:none;color:rgba(255,255,255,.88);cursor:pointer;transition:background-color .16s,color .16s,transform .16s var(--ease-out)}
 .slider-pausa:active{transform:scale(.97)}
 .slider-pausa:focus-visible{outline-offset:-9px}   /* el anillo rodea el icono sin subir hasta el texto del pie */
-.slider.con-pausa .dots{left:50px;right:114px}     /* en celular los puntos se encogen (mín. 26 px) para no pisar las flechas */
-.slider.con-pausa .dots button{min-width:26px}
+.slider.con-pausa .dots{left:50px;right:114px}     /* en celular los puntos se encogen para no pisar las flechas */
 .slider-pausa svg{grid-area:1/1;width:18px;height:18px;fill:currentColor;transition:opacity .16s var(--ease-out),transform .16s var(--ease-out)}
 .slider-pausa .i-play{opacity:0;transform:scale(.6)}
 .slider-pausa[data-pausado="true"] .i-pausa{opacity:0;transform:scale(.6)}
@@ -71,6 +72,10 @@ details .ans a:hover,.sec-head a:hover,.calc-row a:hover{color:var(--red-dk);tex
 .track{transition:transform .6s var(--ease-out)}
 summary{min-height:44px;align-items:center}
 .cities a{min-height:56px}
+@media (min-width:521px) and (max-width:575px){   /* el sitio oculta el texto del botón solo hasta 520 px y entre 521 y 561 px el botón de menú se sale de la pantalla (46 px a 521) */
+  .top .btn .lbl{display:none}
+  .top .btn{padding:11px}
+}
 @media (max-width:380px){
   .top>.wrap{gap:8px}
   .logo{gap:8px}
@@ -80,6 +85,13 @@ summary{min-height:44px;align-items:center}
   .mobile-bar{padding-inline:8px;gap:6px}
   .mobile-bar .btn{padding-inline:4px;gap:5px;font-size:13.5px}
   .mobile-bar .btn svg{width:16px;height:16px}
+}
+@media (max-width:300px){   /* pantallas plegadas de 280 px: sin esto la cabecera y la barra inferior se pasan 11 px */
+  .top>.wrap{padding-inline:12px;gap:6px}
+  .logo b{font-size:14.5px}
+  .mobile-bar{padding-inline:6px;gap:4px}
+  .mobile-bar .btn{padding-inline:2px;gap:4px;font-size:12.5px}
+  .mobile-bar .btn svg{width:14px;height:14px}
 }
 @media (max-width:420px){
   .cta-linea .btn{white-space:normal;width:100%;text-align:center}
@@ -289,6 +301,10 @@ body.home .slider{border-radius:var(--r-card)}
   body.home .slider .arrow,body.home .slider .dots,body.home .slider-pausa{bottom:10px}
 }
 @media (max-width:360px){body.home .slider .dots button{width:36px}}
+@media (max-width:315px){   /* pantallas plegadas de 280 px: no caben 4 puntos junto al botón de pausa y las flechas (las flechas ya cambian de imagen) */
+  body.home .slider .dots button{width:26px}
+  body.home .slider.con-pausa .dots{display:none}
+}
 body.home .cat-home a{position:relative;overflow:hidden;border-radius:var(--r-card);border-top-width:0;padding-top:18px}
 body.home .cat-home a::before{content:"";position:absolute;inset:0 0 auto 0;height:4px;background:var(--ink);transition:background-color .2s}
 body.home .cat-home a:hover::before{background:var(--red)}

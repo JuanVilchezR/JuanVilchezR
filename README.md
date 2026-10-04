@@ -74,3 +74,5 @@ Versiones fijadas en `skills-lock.json`. Se dejaron fuera los de React Native, S
 - Lo que requiere cambiar HTML o contenido (fotos reales de obras, textos repetidos, opciones largas de las listas) está listado en `docs/auditoria.md`.
 - `mejoras.js` se probó contra la copia de `site.js` del 04/10/2026. Si `site.js` cambia la forma de detener el carrusel
   (hoy escucha `mouseenter`/`mouseleave`/`focusin`/`focusout` en `#slider`), corre `npm test`: las pruebas de `carrusel.spec.ts` avisan.
+  El botón refleja la elección del visitante, no el temporizador: el avance sigue deteniéndose solo con el puntero o el foco encima, como antes.
+  Solo se probó en Chromium (no hay Firefox ni Safari en el entorno).

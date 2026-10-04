@@ -29,11 +29,11 @@ Cada hallazgo: observación · norma y numeral · riesgo · recomendación · pr
 - *Riesgo:* el botón principal del negocio se lee mal con sol o en pantallas baratas; los auditores (axe, Lighthouse) lo marcan.
 - *Recomendación:* verde `#15803D` (5,02:1); hover `#116B32` (6,6:1). — **Resuelto** en `mejoras.css` (`--wa`, `--wa-dk`).
 
-**2. Desborde horizontal en celulares de 320 px**
-- *Observación:* a 320 px de ancho el documento mide 370 px: el logo, el botón de WhatsApp y el botón "Menú" no caben; la barra inferior también. En páginas con la franja `.cta-linea`, su botón (`white-space:nowrap`) añade otros 9 px.
+**2. Desborde horizontal en celulares chicos y en anchos intermedios**
+- *Observación:* a 320 px de ancho el documento mide 370 px: el logo, el botón de WhatsApp y el botón "Menú" no caben; la barra inferior también. En páginas con la franja `.cta-linea`, su botón (`white-space:nowrap`) añade otros 9 px. Entre 521 y 561 px (celulares grandes de lado, plegables abiertos) el botón de menú se sale de la pantalla (46 px a 521 px, 6 px a 561 px) porque el sitio oculta el texto del botón de WhatsApp solo hasta 520 px; lo halló la revisión independiente. A 280 px (Galaxy Fold original plegado) la cabecera y la barra inferior se pasan 11 px.
 - *Norma:* WCAG 2.2 · 1.4.10 Reflujo (AA): sin desplazamiento horizontal a 320 px.
-- *Riesgo:* la página se desplaza de lado en celulares chicos; el botón de menú queda parcialmente fuera de pantalla.
-- *Recomendación:* compactar logo y botón de menú bajo 380 px; permitir que el botón de la franja parta su texto. — **Resuelto** (desborde 50 px → 0 en la portada y las 10 páginas internas de muestra).
+- *Riesgo:* la página se desplaza de lado en celulares chicos; el botón de menú, que es el único acceso a la navegación, queda parcialmente fuera de pantalla.
+- *Recomendación:* compactar logo y botón de menú bajo 380 px y bajo 300 px; ocultar el texto del botón de WhatsApp hasta 575 px; permitir que el botón de la franja parta su texto. — **Resuelto** (desborde 50 px → 0 a 320 px, 46 px → 0 a 521 px y 11 px → 0 a 280 px; una prueba recorre 26 anchos de 280 a 1200 px en la portada y 3 páginas internas).
 
 **3. Falta de prueba social verificable** *(contenido, no diseño)*
 - *Observación:* "Proyectos" muestra dibujos técnicos y las fotos de servicios son "referenciales"; no hay obras reales, logotipos de clientes ni testimonios.
