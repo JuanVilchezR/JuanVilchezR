@@ -36,7 +36,7 @@ botones del héroe y el bloque derecho de la barra superior. Cuando quieras, bó
 
 ```bash
 npm install            # instala Playwright 1.56.1, axe-core y las tipografías de prueba
-npm test               # 195 pruebas en 5 anchos (1440, 1366, 768, 390 y 320 px)
+npm test               # 200 pruebas en 5 anchos (1440, 1366, 768, 390 y 320 px); 29 son solo de escritorio o solo de celular
 CAPTURAS=1 npm run capturas   # regenera docs/capturas
 node tests/support/capturar.mjs despues /tmp/caps escritorio,movil   # captura rápida para revisar el diseño
 ```
