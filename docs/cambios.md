@@ -44,6 +44,14 @@ No encontró bloqueos; dejó 12 hallazgos (5 P2 y 7 P3). **Se corrigieron 11** y
 resuelve con CSS (ver el último punto de la lista de abajo). Dos eran regresiones de mi primera versión (el pie del carrusel en
 celular y el temblor de las tarjetas al recorrer su borde inferior con el mouse).
 
+Una segunda revisión independiente (otro agente, otra vez sin mi historial) intentó romper el botón de pausa: rompió a propósito
+21 variantes del código, probó 800 secuencias aleatorias de ratón, teclado y táctil y recorrió 27 anchos de 280 a 1920 px. No halló
+fallos graves. Dejó 1 hallazgo importante (ninguna prueba vigilaba que el interceptor no rompiera el mega-menú del sitio) y 7 detalles
+(puntos pisados por la flecha bajo 316 px, pruebas ciegas a la geometría, táctil sin cubrir, botón sin estilo si falta `mejoras.css`,
+un error con eventos sintéticos, `title` duplicado y un comportamiento informativo). **Se corrigieron los 8** y quedaron cubiertos por
+pruebas, comprobadas rompiendo cada mecanismo a propósito. También halló dos fallos que ya tenía la web publicada: el desborde de 521 a
+561 px (corregido, ver la tabla) y los puntos del carrusel invisibles con los colores forzados de Windows (ver abajo).
+
 ## Cómo se integra
 
 Ver `README.md`. En resumen: copiar `mejoras.css`, enlazarlo después de `site.css` y agregar `home` al `<body>` de la portada.
