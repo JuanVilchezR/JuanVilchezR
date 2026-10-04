@@ -77,6 +77,10 @@ Cada hallazgo: observación · norma y numeral · riesgo · recomendación · pr
 
 **15. Patrón de borde de color grueso a un lado** (`.callout`, `.descarga`: `border-left:4px`) en páginas internas. — **No se tocó** (fuera de la portada); candidato para una pasada posterior de páginas internas.
 
+**16. Puntos del carrusel invisibles con colores forzados de Windows** *(lo halló la revisión independiente)*
+- *Observación:* el modo de alto contraste anula los colores de fondo y los puntos del carrusel, hechos con fondo, desaparecían (ya ocurría en la web publicada).
+- *Norma:* WCAG 2.2 · 1.4.11 Contraste de elementos no textuales (AA). · *Riesgo:* quien usa ese modo no ve cuántas imágenes hay ni en cuál está. · *Recomendación:* colores del sistema bajo `forced-colors: active` (`ButtonText` y `Highlight`). — **Resuelto** y verificado con una prueba que se rompió a propósito para confirmar que falla sin el arreglo. Los trazos blancos de los dibujos casi no se ven con el esquema claro forzado; llevan texto alternativo y no se tocaron.
+
 ## Lo que está bien y se conservó
 
 Semántica sólida (landmarks, `h1`–`h3`, `lang="es-PE"`), enlace "Ir al contenido", menús con `aria-expanded`, carrusel con

@@ -16,7 +16,7 @@ Capa de mejoras de diseño para **www.vyrseguritec.com.pe**, con su batería de 
 | `site/assets/site.css`, `site/assets/site.js` | Copias **idénticas** a las publicadas (una prueba lo verifica). No se modifican. |
 | `docs/cambios.md` | Tabla antes/después con el porqué de cada cambio y la guía de integración. |
 | `docs/auditoria.md` | Auditoría de la web publicada: hallazgos con prioridad, norma (WCAG) y recomendación. |
-| `docs/capturas/` | Capturas antes/después (escritorio y celular, primera pantalla y página completa). Usan tipografías y fotos de prueba. |
+| `docs/capturas/` | Capturas antes/después (escritorio y celular, primera pantalla y página completa) y `carrusel-pausa.jpg` (el botón de pausa reproduciendo, en pausa y con foco de teclado; arriba escritorio, abajo celular). Usan tipografías y fotos de prueba. |
 
 ## Cómo aplicarlo en tu proyecto Astro
 
@@ -56,7 +56,8 @@ Qué verifican:
   de Playwright (no espera tiempo real) y se comprobó rompiendo a propósito cada mecanismo para ver que las pruebas fallan.
 - **Portada** (`home.spec.ts`): sin errores de consola; sin desborde horizontal; formulario → mensaje de WhatsApp correcto;
   validación; menús; preguntas frecuentes; carrusel; áreas táctiles ≥ 44 px; anillo de foco; contraste; movimiento reducido.
-- **Accesibilidad** (`a11y.spec.ts`): axe-core WCAG 2.2 AA, 0 violaciones en la portada.
+- **Anchos** (`anchos.spec.ts`): ninguna de 4 páginas desborda en horizontal en 26 anchos de 280 a 1200 px; el botón de menú queda dentro de la pantalla de 521 a 575 px.
+- **Accesibilidad** (`a11y.spec.ts`): axe-core WCAG 2.2 AA, 0 violaciones en la portada. El carrusel también se prueba con colores forzados de Windows.
 - **Páginas internas** (`paginas-internas.spec.ts`): 10 plantillas (servicio, solución, ciudad, blog, catálogo, contacto, libro de
   reclamaciones…) no empeoran frente a lo publicado.
 

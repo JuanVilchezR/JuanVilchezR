@@ -69,6 +69,10 @@ details .ans a:hover,.sec-head a:hover,.calc-row a:hover{color:var(--red-dk);tex
 .slider-pausa[data-pausado="true"] .i-pausa{opacity:0;transform:scale(.6)}
 .slider-pausa[data-pausado="true"] .i-play{opacity:1;transform:none}
 @media (hover:hover){.slider-pausa:hover{background:rgba(255,255,255,.14);color:#fff}}
+@media (forced-colors:active){   /* alto contraste de Windows: los fondos se anulan y los puntos desaparecían; con colores del sistema se ven y el activo se distingue */
+  .slider .dots button::before{background:ButtonText}
+  .slider .dots button[aria-selected="true"]::before{background:Highlight}
+}
 .track{transition:transform .6s var(--ease-out)}
 summary{min-height:44px;align-items:center}
 .cities a{min-height:56px}

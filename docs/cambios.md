@@ -19,6 +19,7 @@ rutas, orden y nombres de los campos del formulario, y los atributos `data-event
 | Cabecera y barra inferior de 370 px dentro de 320 px (desborde de 50 px) | Caben: logo y botón de menú compactos bajo 380 px | Celulares chicos (iPhone SE, Android de entrada) |
 | Entre 521 y 561 px (celulares grandes de lado, plegables abiertos) el botón de menú se salía de la pantalla (46 px a 521 px) y la barra inferior quedaba cortada | Hasta 575 px el botón de WhatsApp de la cabecera muestra solo el icono, como ya hacía el sitio hasta 520 px | WCAG 1.4.10; ese botón es el único acceso al menú en esos anchos |
 | Pantallas de 280 px (Galaxy Fold original plegado): cabecera y barra inferior 11 px más anchas que la pantalla | Compactas bajo 300 px (logo, márgenes y botones inferiores). Los 4 puntos del carrusel se ocultan bajo 316 px: ya no caben junto al botón de pausa y las flechas, y las flechas siguen cambiando de imagen | Mismo criterio de reflujo hasta 280 px; una prueba recorre 26 anchos entre 280 y 1200 px en 4 páginas |
+| Con el alto contraste de Windows (colores forzados) los puntos del carrusel desaparecían: están hechos con color de fondo, que ese modo anula | Bajo `forced-colors: active` usan colores del sistema: `ButtonText` los inactivos y `Highlight` el activo | WCAG 1.4.11; sin esto quien usa ese modo no ve en qué imagen está. Lo halló la revisión independiente |
 | 9 sobretítulos en mayúsculas (héroe + 8 secciones) sobre los títulos | Quitados en la portada (se ocultan con CSS) | El título ya dice de qué trata; era la plantilla repetida de cada sección |
 | 5 llamados a WhatsApp en la primera pantalla de escritorio (barra superior, cabecera, héroe, botón de envío del formulario y botón flotante) | 3 (cabecera, héroe y envío del formulario). El flotante aparece al pasar el héroe | Un solo camino principal; menos ruido |
 | Nota bajo los botones del héroe repetía "24 horas" y "planos o fotos" | Oculta: ya lo dicen el formulario y la franja de cifras | "24 horas" aparecía 7 veces en la página |
@@ -50,7 +51,7 @@ fallos graves. Dejó 1 hallazgo importante (ninguna prueba vigilaba que el inter
 (puntos pisados por la flecha bajo 316 px, pruebas ciegas a la geometría, táctil sin cubrir, botón sin estilo si falta `mejoras.css`,
 un error con eventos sintéticos, `title` duplicado y un comportamiento informativo). **Se corrigieron los 8** y quedaron cubiertos por
 pruebas, comprobadas rompiendo cada mecanismo a propósito. También halló dos fallos que ya tenía la web publicada: el desborde de 521 a
-561 px (corregido, ver la tabla) y los puntos del carrusel invisibles con los colores forzados de Windows (ver abajo).
+561 px y los puntos del carrusel invisibles con los colores forzados de Windows (los dos corregidos, ver la tabla).
 
 ## Cómo se integra
 
@@ -66,5 +67,6 @@ Para revertir basta quitar el enlace, el script (si lo agregaste) y la clase.
 3. **Formulario del héroe**: 7 campos. Si quieres más contactos, probar uno de dos pasos (nombre + teléfono primero) requiere HTML y JS.
 4. **Repetición de "24 horas"** (7 veces) y de "Consultar mi caso" (9 veces): es copy; conviene decidirlo con calma.
 5. **Listas desplegables en celular:** la opción elegida se corta a media palabra ("…certificado de op"). `text-overflow` no actúa en `select`; hay que acortar los textos de las opciones (contenido; ya ocurría).
+6. **Dibujos técnicos del carrusel con colores forzados claros:** sus trazos blancos casi no se ven sobre el fondo blanco que impone ese modo. Llevan texto alternativo y son ilustrativos; no se tocaron.
 
 *(El botón de pausa del carrusel, que antes figuraba aquí, ya se resuelve con `mejoras.js`; si prefieres no cargar JavaScript adicional, la solución definitiva es agregar el botón dentro de `site.js` y del HTML del carrusel.)*

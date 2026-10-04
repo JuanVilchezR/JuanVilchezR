@@ -323,6 +323,24 @@ test.describe('carrusel: botón de pausa', () => {
     await expect(page.locator('#slider')).not.toHaveClass(/con-pausa/);
   });
 
+  test('con colores forzados de Windows los puntos se ven y el activo se distingue', async ({ page }) => {
+    await page.emulateMedia({ forcedColors: 'active', reducedMotion: 'reduce' });
+    await page.goto('/');
+    await expect(page.locator('.slider .dots button')).toHaveCount(4);
+    const c = await page.evaluate(() => {
+      const puntos = [...document.querySelectorAll('.slider .dots button')];
+      const fondo = (b: Element | undefined) => getComputedStyle(b!, '::before').backgroundColor;
+      return {
+        activo: fondo(puntos.find((b) => b.getAttribute('aria-selected') === 'true')),
+        otro: fondo(puntos.find((b) => b.getAttribute('aria-selected') !== 'true')),
+        carrusel: getComputedStyle(document.querySelector('.slider')!).backgroundColor,
+      };
+    });
+    expect(c.otro, 'los puntos inactivos contrastan con el fondo del carrusel').not.toBe(c.carrusel);
+    expect(c.activo, 'el punto activo se distingue de los demás').not.toBe(c.otro);
+    expect(c.activo).not.toBe(c.carrusel);
+  });
+
   test('con movimiento reducido no se agrega el botón: site.js no avanza solo, no hay nada que pausar', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' }); // antes de navegar; test.use({ reducedMotion }) no lo aplica
     await page.goto('/');
