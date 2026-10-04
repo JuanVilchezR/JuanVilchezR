@@ -1,0 +1,308 @@
+/* VYR SEGURITEC · capa de mejoras de diseño (04/10/2026)
+   ----------------------------------------------------------------------------------------------
+   Se carga DESPUÉS de site.css (o se pega al final de él). No cambia textos, rutas, campos de
+   formularios ni eventos de analítica (data-evento). Para revertir, basta quitar este archivo.
+   · Reglas sin prefijo  → mejoras de todo el sitio (botones, foco, formularios, tarjetas, FAQ).
+   · Reglas "body.home"  → solo la portada: agregar class="home" al <body> de la portada.
+   Movimiento: transform y opacity únicamente, curvas de salida fuertes, nada bajo prefers-reduced-motion.
+   ---------------------------------------------------------------------------------------------- */
+
+/* ===== 1. Fichas de diseño (tokens) ===== */
+:root{
+  /* Verde de WhatsApp con contraste AA para texto blanco (antes #1FA855 = 3.1:1; ahora 5.0:1) */
+  --wa:#15803D; --wa-dk:#116B32;
+  --ease-out:cubic-bezier(.23,1,.32,1);
+  --ease-in-out:cubic-bezier(.77,0,.175,1);
+  --r-ctl:8px; --r-card:12px;
+  --ring:var(--red);
+  --linea-campo:#8C8C8C;               /* borde de campos ≥3:1 sobre blanco (WCAG 1.4.11) */
+  --sombra-1:0 1px 2px rgba(18,18,18,.06),0 6px 16px -4px rgba(18,18,18,.10);
+  --sombra-2:0 2px 4px rgba(18,18,18,.05),0 20px 44px -14px rgba(18,18,18,.22);
+  --flecha:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M2.5 8h11M9 3.5 13.5 8 9 12.5' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+
+/* ===== 2. Detalles que el navegador dibuja por su cuenta ===== */
+::selection{background:var(--red);color:#fff}
+input,select,textarea,button{accent-color:var(--red);caret-color:var(--red)}
+body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+h1{letter-spacing:-.018em}
+h2{letter-spacing:-.012em}
+p{text-wrap:pretty}
+.fact b,.calc dd,.punto,.placa-datos dd,.tbl td.num,.tbl th.num{font-variant-numeric:tabular-nums}
+
+/* Anillo de foco: blanco sobre superficies oscuras, rojo sobre claras (≥3:1 en ambas) */
+.topbar,header.top,.hero,.phero,.coverage,.cta,footer.site,.svc-extra,.asesoria,.mobile-bar,.mega{--ring:#fff}
+.quote-card,.aside-card,.cards,.posts,.faq{--ring:var(--red)}
+a:focus-visible,.btn:focus-visible,summary:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline-color:var(--ring)}
+
+/* Enlaces dentro de texto corrido */
+details .ans a,.sec-head a,.calc-row a,.prose a{text-underline-offset:3px;text-decoration-thickness:1px;text-decoration-color:rgba(33,33,33,.4);transition:color .15s,text-decoration-color .15s}
+details .ans a:hover,.sec-head a:hover,.calc-row a:hover{color:var(--red-dk);text-decoration-color:currentColor}
+
+/* ===== 3. Botones: respuesta al toque, contraste y área táctil ===== */
+.btn{
+  min-height:46px;border-radius:var(--r-ctl);
+  transition:transform .16s var(--ease-out),background-color .16s,color .16s,border-color .16s,box-shadow .2s var(--ease-out);
+}
+.btn:active{transform:scale(.97)}
+.btn-wa:hover{background:var(--wa-dk)}
+.menu-btn{min-height:44px}
+.top .btn{min-height:44px;min-width:44px}
+.slider .arrow{width:44px;height:44px;bottom:36px}
+.slider .prev{right:66px}.slider .next{right:14px}
+.slide figcaption{padding-right:126px}
+.slider .dots{left:6px;bottom:0}
+.slider .dots button{width:44px;height:44px}
+.slider .dots button::before{left:8px;right:8px;top:20px}
+.track{transition:transform .6s var(--ease-out)}
+summary{min-height:44px;align-items:center}
+.cities a{min-height:56px}
+@media (max-width:380px){
+  .top>.wrap{gap:8px}
+  .logo{gap:8px}
+  .logo-mark{width:30px;height:30px}
+  .logo b{font-size:17px}
+  .menu-btn{width:44px;padding:0;gap:0;justify-content:center;font-size:0}   /* solo el icono; el texto "Menú" sigue siendo el nombre accesible */
+  .mobile-bar{padding-inline:8px;gap:6px}
+  .mobile-bar .btn{padding-inline:4px;gap:5px;font-size:13.5px}
+  .mobile-bar .btn svg{width:16px;height:16px}
+}
+@media (max-width:420px){
+  .cta-linea .btn{white-space:normal;width:100%;text-align:center}
+}
+@media (max-width:760px){
+  .mobile-bar .btn{min-height:48px}
+  footer.site li a{display:inline-block;padding-block:5px}
+}
+
+/* ===== 4. Formularios: borde legible, foco claro, error visible ===== */
+.form :is(input:not([type=checkbox],[type=radio]),select,textarea){
+  border-color:var(--linea-campo);border-radius:var(--r-ctl);
+  transition:border-color .15s,box-shadow .2s var(--ease-out),background-color .15s;
+}
+.form :is(input:not([type=checkbox],[type=radio]),select,textarea):hover{border-color:#6B6B6B}
+.form :is(input:not([type=checkbox],[type=radio]),select,textarea):focus-visible{
+  outline:2px solid var(--red);outline-offset:1px;border-color:var(--red);box-shadow:0 0 0 4px rgba(211,47,47,.14);
+}
+.form :is(input:not([type=checkbox],[type=radio]),select,textarea):user-invalid{border-color:var(--red-dk);background-color:#FFF6F5}
+.form select{
+  appearance:none;-webkit-appearance:none;padding-right:42px;
+  background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5' fill='none' stroke='%23212121' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 14px center/12px;
+}
+.form label{letter-spacing:.005em}
+
+/* ===== 5. Tarjetas y listas: elevación sutil solo con puntero fino ===== */
+a.card,.post-card,.cat-home a,.obra{transition:transform .3s var(--ease-out),box-shadow .3s var(--ease-out),border-color .2s,background-color .2s}
+@media (hover:hover) and (pointer:fine){
+  a.card:hover,.post-card:hover,.cat-home a:hover,a.obra:hover{transform:translateY(-3px);box-shadow:var(--sombra-2)}
+}
+
+/* ===== 6. Preguntas frecuentes: el signo gira, la respuesta se despliega ===== */
+summary::after{transition:transform .25s var(--ease-out);display:inline-block}
+details[open] summary::after{content:"+";transform:rotate(45deg)}
+@media (prefers-reduced-motion:no-preference){
+  @supports (interpolate-size:allow-keywords){
+    :root{interpolate-size:allow-keywords}
+    @supports selector(details::details-content){
+      details::details-content{block-size:0;overflow:hidden;transition:block-size .3s var(--ease-out),content-visibility .3s allow-discrete}
+      details[open]::details-content{block-size:auto}
+    }
+  }
+}
+
+/* ===== 7. Cabecera y navegación entre páginas ===== */
+nav.main a,.mm-btn{transition:color .15s,border-color .15s}
+@media (prefers-reduced-motion:no-preference){
+  /* Sombra de la cabecera al desplazarse (solo navegadores con animaciones ligadas al scroll) */
+  @supports (animation-timeline:scroll()){
+    header.top{animation:cabecera-sombra linear both;animation-timeline:scroll(root block);animation-range:0 140px}
+  }
+  /* Transición suave entre páginas (MPA); la cabecera y la barra móvil no parpadean */
+  @view-transition{navigation:auto}
+  header.top{view-transition-name:cabecera}
+  .mobile-bar{view-transition-name:barra-movil}
+  ::view-transition-group(root){animation-duration:.2s}
+  ::view-transition-old(root),::view-transition-new(root){animation-timing-function:var(--ease-out)}
+}
+@keyframes cabecera-sombra{from{box-shadow:0 0 0 rgba(0,0,0,0)}to{box-shadow:0 12px 28px -14px rgba(0,0,0,.65)}}
+
+/* =====================================================================================
+   PORTADA · body.home
+   ===================================================================================== */
+
+/* --- Barra superior: el llamado a WhatsApp ya está en la cabecera y en el héroe --- */
+body.home .tb-right{display:none}
+
+/* --- Héroe --- */
+body.home .hero{padding-block:clamp(32px,3.6vw,52px) clamp(48px,5vw,76px)}
+body.home .hero.grid-bg::before{
+  -webkit-mask-image:radial-gradient(120% 95% at 12% 0%,#000 28%,transparent 80%);
+  mask-image:radial-gradient(120% 95% at 12% 0%,#000 28%,transparent 80%);
+}
+body.home .hero .wrap{align-items:center;gap:clamp(32px,4vw,56px)}
+body.home .hero .wrap>div:first-child{padding-top:0}
+body.home .hero .eyebrow,body.home .hero .note{display:none}   /* repiten datos del formulario y de la franja de cifras */
+body.home .hero h1{font-size:clamp(36px,5.2vw,64px);line-height:1.02;letter-spacing:-.02em;margin-block:0 22px}
+body.home .hero .lead{font-size:clamp(17px,1.45vw,19px);line-height:1.6;max-width:33em}
+body.home .hero .ctas{margin-top:30px;gap:12px}
+body.home .hero .ctas .btn{min-height:52px;padding-inline:26px;font-size:17px}
+@media (max-width:760px){body.home .hero .ctas .btn{width:100%}}
+
+/* --- Formulario de cotización --- */
+body.home .quote-card{
+  position:relative;overflow:hidden;
+  background:#fff;border:0;border-radius:var(--r-card);
+  padding:30px 26px 24px;gap:14px;
+  box-shadow:0 1px 0 rgba(255,255,255,.05),0 32px 64px -24px rgba(0,0,0,.75);
+}
+body.home .quote-card::before{content:"";position:absolute;inset:0 0 auto 0;height:4px;background:var(--red)}
+body.home .quote-card h2{font-size:clamp(24px,2.3vw,28px);line-height:1.05}
+body.home .quote-card .sub{font-size:14.5px;line-height:1.5;margin-top:6px}
+body.home .quote-card .form{gap:10px 12px}
+body.home .quote-card .form label{font-size:13.5px;margin-bottom:4px}
+body.home .quote-card .form input,body.home .quote-card .form select{height:44px;padding-block:8px}
+body.home .quote-card .form textarea{min-height:64px;padding-block:10px}
+body.home .quote-card .form .btn{min-height:50px;font-size:16.5px}
+body.home .quote-card .form-result{border-radius:var(--r-ctl)}
+
+/* Laptops de poca altura (1366x768): el botón "Enviar por WhatsApp" debe quedar a la vista sin desplazarse */
+@media (min-width:901px) and (max-height:820px){
+  body.home .hero{padding-block:24px 56px}
+  body.home .quote-card{padding:26px 24px 20px;gap:10px}
+  body.home .quote-card .sub{margin-top:4px}
+  body.home .quote-card .form{gap:8px 12px}
+  body.home .quote-card .form textarea{min-height:52px}
+  body.home .quote-card .form .hint{margin-top:4px}
+}
+
+/* --- Accesos directos en forma de cajetín --- */
+body.home .hero .quick{margin-top:clamp(4px,1vw,12px);border-radius:var(--r-card);background:rgba(255,255,255,.13);border-color:rgba(255,255,255,.13)}
+body.home .quick a{min-height:92px;padding:16px 18px 18px;background:#232323;transition:background-color .2s}
+body.home .quick a:hover,body.home .quick a:focus-visible{background:#2E2E2E}
+body.home .quick small{color:#B3B3B3;font-size:12px;letter-spacing:.02em}
+body.home .quick b{font-size:clamp(16px,1.3vw,17.5px)}
+body.home .quick a::after{
+  content:"";position:absolute;right:14px;top:14px;width:16px;height:16px;background:var(--red-soft);
+  -webkit-mask:var(--flecha) center/contain no-repeat;mask:var(--flecha) center/contain no-repeat;
+  opacity:0;transform:translateX(-4px);transition:opacity .2s var(--ease-out),transform .2s var(--ease-out);
+}
+body.home .quick a:focus-visible::after{opacity:1;transform:none}
+@media (hover:hover) and (pointer:fine){body.home .quick a:hover::after{opacity:1;transform:none}}
+
+/* --- Franja de cifras --- */
+body.home .fact{padding:26px 22px}
+body.home .fact:first-child{padding-left:0}
+body.home .fact b{font-size:clamp(22px,2vw,26px);letter-spacing:-.01em}
+body.home .fact span{font-size:14.5px;line-height:1.4;display:block;margin-top:4px}
+@media (max-width:760px){body.home .fact{padding:20px 16px}body.home .fact:nth-child(odd){padding-left:0}}
+
+/* --- Ritmo de secciones y títulos (sin sobretítulos repetidos) --- */
+body.home section.band{padding-block:clamp(56px,7vw,96px)}
+body.home .eyebrow{display:none}
+body.home .sec-head{gap:14px;margin-bottom:clamp(28px,3.6vw,48px);max-width:740px}
+body.home .sec-head h2{font-size:clamp(30px,3.9vw,46px);line-height:1.04}
+body.home .sec-head p{font-size:clamp(16px,1.4vw,18px);line-height:1.6;max-width:58ch}
+
+/* --- Servicios: la tarjeta entera es el enlace principal; los sub-enlaces siguen activos --- */
+body.home .svc-grid{gap:clamp(16px,2vw,28px)}
+body.home .svc-card{
+  position:relative;border-radius:var(--r-card);
+  transition:transform .3s var(--ease-out),box-shadow .3s var(--ease-out),border-color .2s;
+}
+body.home .svc-card .ph{overflow:hidden}
+body.home .svc-card .ph img{transition:transform .8s var(--ease-out)}
+body.home .svc-card .ph::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 55%,rgba(18,18,18,.38));pointer-events:none}
+body.home .svc-card .seal{z-index:1;border-left:0;border-radius:6px;padding:6px 10px;font-size:12px;letter-spacing:.02em;background:rgba(18,18,18,.88)}
+body.home .svc-card h3{font-size:clamp(21px,1.9vw,24px)}
+body.home .svc-card h3 a::after{content:"";position:absolute;inset:0;z-index:1}
+body.home .svc-card h3 a:focus-visible{outline:none}
+body.home .svc-card:has(h3 a:focus-visible){outline:3px solid var(--ring);outline-offset:3px}
+body.home .svc-card ul a{position:relative;z-index:2}
+body.home .svc-card ul a::before{border-radius:1px}
+@media (hover:hover) and (pointer:fine){
+  body.home .svc-card:hover{transform:translateY(-3px);box-shadow:var(--sombra-2);border-color:#CFCFCF}
+  body.home .svc-card:hover .ph img{transform:scale(1.035)}
+}
+body.home .svc-extra{border-radius:var(--r-card);padding:24px 28px}
+
+/* --- Proceso y cálculo --- */
+body.home .steps{gap:clamp(20px,3vw,40px)}
+body.home .steps li{border-top-width:2px;padding-top:20px}
+body.home .steps h3{font-size:22px}
+body.home .steps p{font-size:15.5px;line-height:1.55}
+body.home .calc-row{margin-top:clamp(48px,6vw,80px);padding-top:clamp(36px,5vw,56px);align-items:start;gap:clamp(32px,5vw,72px)}
+body.home .calc-row h3{font-size:clamp(26px,3vw,34px);line-height:1.08}
+body.home .calc-row p{font-size:17px;line-height:1.6;max-width:30em}
+body.home .calc{border-radius:var(--r-card)}
+
+/* --- Soluciones por tipo de edificación --- */
+body.home .sector-grid{border-radius:var(--r-card)}
+body.home .sector{position:relative;padding:28px 26px 24px;gap:12px;transition:background-color .2s}
+body.home .sector h3{font-size:clamp(20px,1.7vw,22px)}
+body.home .sector h3 a::after{content:"";position:absolute;inset:0}
+body.home .sector .acciones{position:relative;z-index:1;gap:8px 14px}
+body.home .sector .ver{text-decoration:none;font-weight:600;font-size:14px}
+body.home .sector .acciones a[data-evento]{font-size:14px;font-weight:500}
+body.home .sector::after{
+  content:"";position:absolute;right:24px;top:28px;width:18px;height:18px;background:var(--red);pointer-events:none;
+  -webkit-mask:var(--flecha) center/contain no-repeat;mask:var(--flecha) center/contain no-repeat;
+  opacity:0;transform:translateX(-6px);transition:opacity .2s var(--ease-out),transform .25s var(--ease-out);
+}
+body.home .sector:focus-within::after{opacity:1;transform:none}
+@media (hover:hover) and (pointer:fine){
+  body.home .sector:hover{background:#FAFAFA}
+  body.home .sector:hover::after{opacity:1;transform:none}
+}
+
+/* --- Proyectos, catálogo, cobertura, blog --- */
+body.home .slider{border-radius:var(--r-card)}
+body.home .cat-home a{border-radius:var(--r-card)}
+body.home .cities{column-gap:28px}
+body.home .cities a{margin-right:0;transition:color .15s}
+body.home .cities a::after{
+  content:"";flex:none;width:16px;height:16px;background:var(--red-soft);
+  -webkit-mask:var(--flecha) center/contain no-repeat;mask:var(--flecha) center/contain no-repeat;
+  transition:transform .25s var(--ease-out);
+}
+@media (hover:hover) and (pointer:fine){body.home .cities a:hover::after{transform:translateX(5px)}}
+body.home .post-card{border-radius:var(--r-card);padding:24px}
+body.home .post-card h3{font-size:clamp(18px,1.6vw,20px);line-height:1.18}
+
+/* --- Preguntas frecuentes: título fijo a la izquierda, respuestas a la derecha --- */
+body.home #preguntas .wrap{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:clamp(32px,6vw,88px);align-items:start}
+body.home #preguntas .sec-head{position:sticky;top:calc(96px + env(safe-area-inset-top,0px));margin-bottom:0}
+body.home #preguntas .faq{max-width:none}
+body.home .faq summary{font-size:clamp(17px,1.4vw,18.5px)}
+@media (max-width:900px){
+  body.home #preguntas .wrap{grid-template-columns:1fr}
+  body.home #preguntas .sec-head{position:static;margin-bottom:24px}
+}
+
+/* --- Cierre y pie --- */
+body.home .cta{padding-block:clamp(48px,6vw,76px)}
+body.home .cta h2{font-size:clamp(30px,3.8vw,44px)}
+footer.site{padding-top:clamp(48px,6vw,72px)}
+footer.site a{transition:color .15s}
+footer.site a:hover{text-underline-offset:3px}
+
+/* ===== 8. Movimiento de la portada: una sola entrada orquestada (héroe) + botón flotante ===== */
+@media (prefers-reduced-motion:no-preference){
+  /* Entrada del héroe: el título y el texto aparecen de inmediato (rapidez percibida); solo la ficha y los accesos entran. */
+  body.home .hero .quote-card{animation:entra .5s var(--ease-out) .08s both}
+  body.home .hero .quick a{animation:entra .45s var(--ease-out) both}
+  body.home .hero .quick a:nth-child(1){animation-delay:.14s}
+  body.home .hero .quick a:nth-child(2){animation-delay:.19s}
+  body.home .hero .quick a:nth-child(3){animation-delay:.24s}
+  body.home .hero .quick a:nth-child(4){animation-delay:.29s}
+  body.home .hero .quick a:nth-child(5){animation-delay:.34s}
+  body.home .hero .quick a:nth-child(6){animation-delay:.39s}
+
+  /* El botón flotante de WhatsApp aparece al dejar atrás el héroe (en celular lo cubre la barra inferior) */
+  @supports (animation-timeline:scroll()){
+    @media (min-width:761px){
+      body.home .wa-float{animation:flotante-entra linear both;animation-timeline:scroll(root block);animation-range:420px 680px}
+    }
+  }
+}
+@keyframes entra{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes flotante-entra{from{opacity:0;visibility:hidden;transform:translateY(10px) scale(.94)}to{opacity:1;visibility:visible;transform:none}}

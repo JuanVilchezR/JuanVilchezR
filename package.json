@@ -1,0 +1,20 @@
+{
+  "name": "vyrseguritec-web-mejoras",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Capa de mejoras de diseño para vyrseguritec.com.pe y su batería de pruebas con Playwright",
+  "scripts": {
+    "test": "playwright test",
+    "test:home": "playwright test tests/home.spec.ts",
+    "test:a11y": "playwright test tests/a11y.spec.ts",
+    "capturas": "playwright test tests/capturas.spec.ts"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.10.2",
+    "@fontsource-variable/archivo": "^5.2.0",
+    "@fontsource/ibm-plex-mono": "^5.2.0",
+    "@fontsource/ibm-plex-sans": "^5.2.0",
+    "@playwright/test": "1.56.1"
+  }
+}

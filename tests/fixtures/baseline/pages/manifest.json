@@ -1,0 +1,12 @@
+{
+  "/servicios/sistema-de-agua-contra-incendio/": "servicio-agua.html",
+  "/servicios/bombas-contra-incendio/": "servicio-bombas.html",
+  "/soluciones/almacenes-y-centros-de-distribucion/": "solucion-almacenes.html",
+  "/sistemas-contra-incendios/lima/": "ciudad-lima.html",
+  "/blog/": "blog-indice.html",
+  "/blog/norma-a130-que-sistema-contra-incendio-exige/": "blog-articulo.html",
+  "/catalogo/bombas-contra-incendio/": "catalogo-bombas.html",
+  "/contacto/": "contacto.html",
+  "/libro-de-reclamaciones/": "libro-reclamaciones.html",
+  "/proyectos/": "proyectos.html"
+}
