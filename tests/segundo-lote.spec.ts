@@ -101,3 +101,43 @@ test('catálogo: en celular el listado omite los datos repetidos y de escritorio
   const visibles = await filas.evaluateAll((ds) => ds.filter((d) => getComputedStyle(d).display !== 'none').length);
   expect(visibles).toBe(viewport!.width <= 760 ? 2 : 4);
 });
+
+/* ---- Correcciones de la revisión de código independiente ---- */
+
+test('tablas anchas: el nombre de la región es corto aunque el pie de tabla sea largo', async ({ page }) => {
+  await page.goto('/soluciones/hoteles-y-restaurantes/');
+  await estable(page);
+  const nombres = await page.locator('.tbl[role="region"]').evaluateAll((ts) => ts.map((t) => t.getAttribute('aria-label') ?? ''));
+  test.skip(nombres.length === 0, 'en esta ventana las tablas caben enteras');
+  for (const n of nombres) {
+    expect(n.length, `«${n}»`).toBeGreaterThan(0);
+    expect(n.length, 'un nombre de región no debe ser un párrafo').toBeLessThanOrEqual(90);
+  }
+});
+
+test('pie en celular: cada enlace es un objetivo táctil de 44 px', async ({ page, viewport }) => {
+  test.skip(!viewport || viewport.width > 760, 'la regla es del diseño de celular');
+  await page.goto('/');
+  await estable(page);
+  const alturas = await page.locator('footer.site li a').evaluateAll((as) => as.map((a) => Math.round(a.getBoundingClientRect().height)));
+  expect(alturas.length).toBeGreaterThan(20);
+  expect(Math.min(...alturas)).toBeGreaterThanOrEqual(44);
+});
+
+test('<details> animados: el anillo de foco no queda recortado (margen de recorte) y los sellos de versión son únicos', async ({ page }) => {
+  await page.goto('/servicios/sistema-de-agua-contra-incendio/');
+  await estable(page);
+  const margen = await page.evaluate(() => {
+    if (!CSS.supports('selector(details::details-content)') || !CSS.supports('interpolate-size', 'allow-keywords')) return null;
+    return parseFloat(getComputedStyle(document.querySelector('details')!, '::details-content').overflowClipMargin);
+  });
+  test.skip(margen === null, 'este navegador no anima el contenido de <details>');
+  expect(margen).toBeGreaterThanOrEqual(6);
+
+  const sello = (p: typeof page) => p.evaluate(() => [...document.querySelectorAll('link[href*="/assets/"][href*="?v="],script[src*="/assets/"][src*="?v="]')].map((e) => (e.getAttribute('href') ?? e.getAttribute('src'))!.split('?v=')[1]));
+  const a = await sello(page);
+  await page.goto('/contacto/');
+  const b = await sello(page);
+  expect(a.length).toBeGreaterThanOrEqual(3);
+  expect(new Set([...a, ...b]).size, 'todas las páginas comparten el sello de versión: el navegador reutiliza site.css, mejoras.css y site.js').toBe(1);
+});
